@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partnership Performance Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .kpi-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease-in-out;
+        }
+        .filter-select {
+            background-color: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            min-width: 180px;
+        }
+        .chart-container {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Partner 360 Dashboard</h1>
+            <div class="mt-2 border-b">
+                <nav class="-mb-px flex space-x-6">
+                    <a href="#" class="py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Overview</a>
+                    <a href="#" class="py-2 px-1 border-b-2 border-blue-600 text-blue-600 font-semibold" aria-current="page">Partnership Performance</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Filters -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8 p-4 bg-white rounded-lg shadow-sm">
+            <div>
+                <label for="prm-filter" class="text-sm font-medium text-gray-600 block mb-1">Partner Manager</label>
+                <select id="prm-filter" class="filter-select w-full">
+                    <option>All</option>
+                    <option>John Doe</option>
+                    <option>Jane Smith</option>
+                    <option>Alex Ray</option>
+                </select>
+            </div>
+            <div>
+                <label for="tier-filter" class="text-sm font-medium text-gray-600 block mb-1">Program Tier</label>
+                <select id="tier-filter" class="filter-select w-full">
+                    <option>All</option>
+                    <option>Elite</option>
+                    <option>Preferred</option>
+                    <option>Standard</option>
+                </select>
+            </div>
+            <div>
+                <label for="type-filter" class="text-sm font-medium text-gray-600 block mb-1">Partner Type</label>
+                <select id="type-filter" class="filter-select w-full">
+                    <option>All</option>
+                    <option>Tech</option>
+                    <option>Solution</option>
+                </select>
+            </div>
+            <div>
+                <label for="region-filter" class="text-sm font-medium text-gray-600 block mb-1">Sub-Region</label>
+                <select id="region-filter" class="filter-select w-full">
+                    <option>All</option>
+                    <option>AMER</option>
+                    <option>EMEA</option>
+                    <option>APAC</option>
+                </select>
+            </div>
+            <div>
+                <label for="date-filter" class="text-sm font-medium text-gray-600 block mb-1">As-of Date</label>
+                <input type="date" id="date-filter" class="filter-select w-full">
+            </div>
+        </div>
+
+        <!-- Snapshot KPIs -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Snapshot View (Fiscal Year-to-Date)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Sourced Pipeline -->
+                <div class="kpi-card">
+                    <h3 class="text-gray-500 font-medium">Sourced Pipeline Generated</h3>
+                    <p id="kpi-pipeline" class="text-4xl font-bold text-gray-800 mt-2">--</p>
+                    <div class="flex items-center text-sm mt-3">
+                        <span id="kpi-pipeline-yoy" class="flex items-center mr-4"></span>
+                        <span id="kpi-pipeline-qoq" class="flex items-center"></span>
+                    </div>
+                </div>
+                <!-- Sourced & Influenced Bookings -->
+                <div class="kpi-card">
+                    <h3 class="text-gray-500 font-medium">Sourced & Influenced Bookings</h3>
+                    <p id="kpi-bookings" class="text-4xl font-bold text-gray-800 mt-2">--</p>
+                    <div class="flex items-center text-sm mt-3">
+                         <span id="kpi-bookings-yoy" class="flex items-center mr-4"></span>
+                         <span id="kpi-bookings-qoq" class="flex items-center"></span>
+                    </div>
+                </div>
+                <!-- Partner Attach Rate -->
+                <div class="kpi-card">
+                    <h3 class="text-gray-500 font-medium">Partner Attach Rate</h3>
+                    <p id="kpi-attach-rate" class="text-4xl font-bold text-gray-800 mt-2">--</p>
+                    <div class="flex items-center text-sm mt-3">
+                        <span id="kpi-attach-rate-yoy" class="flex items-center mr-4"></span>
+                        <span id="kpi-attach-rate-qoq" class="flex items-center"></span>
+                    </div>
+                </div>
+                <!-- Leads Sent to Partners -->
+                <div class="kpi-card">
+                    <h3 class="text-gray-500 font-medium">Leads Sent to Partners</h3>
+                    <p id="kpi-leads" class="text-4xl font-bold text-gray-800 mt-2">--</p>
+                    <div class="flex items-center text-sm mt-3">
+                        <span id="kpi-leads-yoy" class="flex items-center mr-4"></span>
+                        <span id="kpi-leads-qoq" class="flex items-center"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Metrics -->
+        <div>
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Comparison Metrics (Rolling 12 Months)</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Win Rate -->
+                <div class="chart-container lg:col-span-2">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Win Rate: Influenced vs. Uninfluenced</h3>
+                    <canvas id="winRateChart"></canvas>
+                </div>
+                <div class="kpi-card flex flex-col justify-center items-center text-center">
+                    <h3 class="text-gray-500 font-medium">Partner Influence Win Rate Lift</h3>
+                    <p id="lift-win-rate" class="text-5xl font-bold text-blue-600 my-2">--</p>
+                    <p class="text-gray-600">more likely to close</p>
+                </div>
+
+                <!-- Sales Cycle -->
+                <div class="chart-container lg:col-span-2">
+                     <h3 class="text-lg font-semibold text-gray-700 mb-4">Average Sales Cycle (Days)</h3>
+                    <canvas id="salesCycleChart"></canvas>
+                </div>
+                <div class="kpi-card flex flex-col justify-center items-center text-center">
+                    <h3 class="text-gray-500 font-medium">Sales Cycle Reduction</h3>
+                    <p id="lift-sales-cycle" class="text-5xl font-bold text-blue-600 my-2">--</p>
+                    <p class="text-gray-600">days faster to close</p>
+                </div>
+
+                <!-- Sales Price -->
+                <div class="chart-container lg:col-span-2">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Average Sales Price ($)</h3>
+                    <canvas id="salesPriceChart"></canvas>
+                </div>
+                <div class="kpi-card flex flex-col justify-center items-center text-center">
+                    <h3 class="text-gray-500 font-medium">Partner Influence ASP Uplift</h3>
+                    <p id="lift-sales-price" class="text-5xl font-bold text-blue-600 my-2">--</p>
+                    <p class="text-gray-600">larger average deal size</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- UTILITY FUNCTIONS ---
+        const formatCurrency = (value) => {
+            if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+            if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
+            return `$${value}`;
+        };
+
+        const formatNumber = (value) => new Intl.NumberFormat().format(value);
+        const formatPercentage = (value) => `${(value * 100).toFixed(1)}%`;
+
+        const renderTrend = (element, value) => {
+            const isPositive = value >= 0;
+            const color = isPositive ? 'text-green-600' : 'text-red-600';
+            const arrow = isPositive ? '▲' : '▼';
+            element.innerHTML = `<span class="${color} font-semibold">${arrow} ${Math.abs(value * 100).toFixed(1)}%</span>`;
+        };
+
+        // --- MOCK DATA GENERATION ---
+        // This simulates fetching new data when a filter is applied.
+        const generateMockData = () => {
+            const randomFactor = 0.8 + Math.random() * 0.4; // between 0.8 and 1.2
+            return {
+                pipeline: 15200000 * randomFactor,
+                pipelineYoY: (Math.random() - 0.4) * 0.3,
+                pipelineQoQ: (Math.random() - 0.5) * 0.2,
+
+                bookings: 8500000 * randomFactor,
+                bookingsYoY: (Math.random() - 0.3) * 0.25,
+                bookingsQoQ: (Math.random() - 0.45) * 0.15,
+
+                attachRate: 0.45 * randomFactor,
+                attachRateYoY: (Math.random() - 0.4) * 0.1,
+                attachRateQoQ: (Math.random() - 0.6) * 0.05,
+
+                leads: 1280 * randomFactor,
+                leadsYoY: (Math.random() - 0.2) * 0.3,
+                leadsQoQ: (Math.random() - 0.4) * 0.2,
+
+                winRateInfluenced: 0.5 + Math.random() * 0.2, // 50-70%
+                winRateUninfluenced: 0.3 + Math.random() * 0.15, // 30-45%
+
+                salesCycleInfluenced: 40 + Math.random() * 15, // 40-55 days
+                salesCycleUninfluenced: 60 + Math.random() * 20, // 60-80 days
+
+                salesPriceInfluenced: 110000 + Math.random() * 30000, // 110k-140k
+                salesPriceUninfluenced: 70000 + Math.random() * 20000, // 70k-90k
+            };
+        };
+
+        // --- CHARTING LOGIC ---
+        let charts = {};
+
+        const createChart = (ctx, type, labels, data, label) => {
+            return new Chart(ctx, {
+                type: type,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: label,
+                        data: data,
+                        backgroundColor: ['#3b82f6', '#9ca3af'],
+                        borderColor: ['#2563eb', '#6b7280'],
+                        borderWidth: 1,
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.x !== null) {
+                                        // FIX: Use context.chart.canvas.id instead of ctx.canvas.id
+                                        if (context.chart.canvas.id.includes('Price')) {
+                                           label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(context.parsed.x);
+                                        } else if (context.chart.canvas.id.includes('Cycle')) {
+                                           label += `${context.parsed.x.toFixed(0)} days`;
+                                        } else {
+                                           label += `${(context.parsed.x * 100).toFixed(1)}%`;
+                                        }
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { display: false },
+                            ticks: {
+                                callback: function(value, index, values) {
+                                     // FIX: Use this.chart.canvas.id instead of ctx.canvas.id
+                                     if (this.chart.canvas.id.includes('Price')) return formatCurrency(value);
+                                     if (this.chart.canvas.id.includes('Cycle')) return `${value}`;
+                                     return `${value * 100}%`;
+                                }
+                            }
+                        },
+                        y: {
+                           grid: { display: false }
+                        }
+                    }
+                }
+            });
+        };
+        
+        const initializeCharts = (data) => {
+            charts.winRate = createChart(document.getElementById('winRateChart'), 'bar', ['Influenced', 'Uninfluenced'], [data.winRateInfluenced, data.winRateUninfluenced], 'Win Rate');
+            charts.salesCycle = createChart(document.getElementById('salesCycleChart'), 'bar', ['Influenced', 'Uninfluenced'], [data.salesCycleInfluenced, data.salesCycleUninfluenced], 'Avg. Sales Cycle');
+            charts.salesPrice = createChart(document.getElementById('salesPriceChart'), 'bar', ['Influenced', 'Uninfluenced'], [data.salesPriceInfluenced, data.salesPriceUninfluenced], 'Avg. Sales Price');
+        };
+
+        // --- DASHBOARD UPDATE LOGIC ---
+        const updateDashboard = () => {
+            const data = generateMockData();
+
+            // Update KPIs
+            document.getElementById('kpi-pipeline').textContent = formatCurrency(data.pipeline);
+            renderTrend(document.getElementById('kpi-pipeline-yoy'), data.pipelineYoY);
+            renderTrend(document.getElementById('kpi-pipeline-qoq'), data.pipelineQoQ);
+
+            document.getElementById('kpi-bookings').textContent = formatCurrency(data.bookings);
+            renderTrend(document.getElementById('kpi-bookings-yoy'), data.bookingsYoY);
+            renderTrend(document.getElementById('kpi-bookings-qoq'), data.bookingsQoQ);
+            
+            document.getElementById('kpi-attach-rate').textContent = formatPercentage(data.attachRate);
+            renderTrend(document.getElementById('kpi-attach-rate-yoy'), data.attachRateYoY);
+            renderTrend(document.getElementById('kpi-attach-rate-qoq'), data.attachRateQoQ);
+
+            document.getElementById('kpi-leads').textContent = formatNumber(Math.round(data.leads));
+            renderTrend(document.getElementById('kpi-leads-yoy'), data.leadsYoY);
+            renderTrend(document.getElementById('kpi-leads-qoq'), data.leadsQoQ);
+            
+            // Update Comparison Lifts
+            const winRateLift = (data.winRateInfluenced / data.winRateUninfluenced).toFixed(1) + 'x';
+            document.getElementById('lift-win-rate').textContent = winRateLift;
+
+            const salesCycleReduction = (data.salesCycleUninfluenced - data.salesCycleInfluenced).toFixed(0);
+            document.getElementById('lift-sales-cycle').textContent = salesCycleReduction;
+
+            const salesPriceUplift = formatPercentage((data.salesPriceInfluenced / data.salesPriceUninfluenced) - 1);
+            document.getElementById('lift-sales-price').textContent = salesPriceUplift;
+
+            // Update Charts
+            charts.winRate.data.datasets[0].data = [data.winRateInfluenced, data.winRateUninfluenced];
+            charts.winRate.update();
+
+            charts.salesCycle.data.datasets[0].data = [data.salesCycleInfluenced, data.salesCycleUninfluenced];
+            charts.salesCycle.update();
+
+            charts.salesPrice.data.datasets[0].data = [data.salesPriceInfluenced, data.salesPriceUninfluenced];
+            charts.salesPrice.update();
+        };
+
+        // --- INITIALIZATION & EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default date
+            const dateFilter = document.getElementById('date-filter');
+            const today = new Date();
+            dateFilter.value = today.toISOString().split('T')[0];
+
+            // Initial load
+            const initialData = generateMockData();
+            initializeCharts(initialData);
+            updateDashboard(); // Call once to populate on load
+
+            // Add event listeners to filters
+            const filters = document.querySelectorAll('.filter-select, #date-filter');
+            filters.forEach(filter => {
+                filter.addEventListener('change', () => {
+                    // Add a subtle loading effect
+                    const dashboard = document.querySelector('.max-w-7xl');
+                    dashboard.style.opacity = '0.5';
+                    dashboard.style.transition = 'opacity 0.3s ease-in-out';
+                    setTimeout(() => {
+                        updateDashboard();
+                        dashboard.style.opacity = '1';
+                    }, 300);
+                });
+            });
+        });
+    </script>
+</body>
