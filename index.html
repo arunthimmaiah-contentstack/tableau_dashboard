@@ -1,0 +1,499 @@
+import React, { useState, useEffect } from 'react';
+import { Plus, Search, Database, BarChart3, Code, Settings, Play, Download, Eye, Edit, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
+
+const DBTSemanticLayerTool = () => {
+  const [activeTab, setActiveTab] = useState('models');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [models, setModels] = useState([
+    {
+      id: 1,
+      name: 'orders',
+      description: 'Customer order data with financial metrics',
+      entities: ['order_id', 'customer_id'],
+      dimensions: ['order_date', 'status', 'channel'],
+      measures: ['revenue', 'order_count', 'avg_order_value'],
+      status: 'active'
+    },
+    {
+      id: 2,
+      name: 'customers',
+      description: 'Customer demographic and behavior data',
+      entities: ['customer_id'],
+      dimensions: ['signup_date', 'region', 'segment'],
+      measures: ['total_customers', 'lifetime_value'],
+      status: 'draft'
+    }
+  ]);
+
+  const [metrics, setMetrics] = useState([
+    {
+      id: 1,
+      name: 'total_revenue',
+      label: 'Total Revenue',
+      description: 'Sum of all order revenue',
+      type: 'simple',
+      type_params: { measure: 'revenue' },
+      model: 'orders',
+      status: 'active'
+    },
+    {
+      id: 2,
+      name: 'monthly_active_customers',
+      label: 'Monthly Active Customers',
+      description: 'Unique customers who placed orders in the last 30 days',
+      type: 'simple',
+      type_params: { measure: 'total_customers' },
+      model: 'customers',
+      status: 'active'
+    }
+  ]);
+
+  const [selectedModel, setSelectedModel] = useState(null);
+  const [selectedMetric, setSelectedMetric] = useState(null);
+  const [query, setQuery] = useState('');
+  const [queryResults, setQueryResults] = useState(null);
+  const [yamlOutput, setYamlOutput] = useState('');
+
+  const generateYAML = (model) => {
+    return `semantic_models:
+  - name: ${model.name}
+    description: ${model.description}
+    model: ref('${model.name}')
+    
+    entities:
+${model.entities.map(entity => `      - name: ${entity}
+        type: primary`).join('\n')}
+    
+    dimensions:
+${model.dimensions.map(dim => `      - name: ${dim}
+        type: categorical`).join('\n')}
+    
+    measures:
+${model.measures.map(measure => `      - name: ${measure}
+        agg: sum`).join('\n')}`;
+  };
+
+  const executeQuery = () => {
+    // Simulate query execution
+    const sampleResults = [
+      { date: '2024-01', revenue: 125000, orders: 450 },
+      { date: '2024-02', revenue: 135000, orders: 478 },
+      { date: '2024-03', revenue: 148000, orders: 523 }
+    ];
+    setQueryResults(sampleResults);
+  };
+
+  const ModelBuilder = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Semantic Models</h2>
+        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+          <Plus className="w-4 h-4" />
+          New Model
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <div className="space-y-4">
+            {models.map(model => (
+              <div key={model.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="font-semibold text-lg">{model.name}</h3>
+                      <span className={`px-2 py-1 rounded text-xs ${
+                        model.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {model.status}
+                      </span>
+                    </div>
+                    <p className="text-gray-600 mb-3">{model.description}</p>
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <span className="font-medium">Entities:</span>
+                        <div className="text-gray-600">{model.entities.length} defined</div>
+                      </div>
+                      <div>
+                        <span className="font-medium">Dimensions:</span>
+                        <div className="text-gray-600">{model.dimensions.length} defined</div>
+                      </div>
+                      <div>
+                        <span className="font-medium">Measures:</span>
+                        <div className="text-gray-600">{model.measures.length} defined</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => setSelectedModel(model)}
+                      className="p-2 text-gray-500 hover:text-blue-600"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button className="p-2 text-gray-500 hover:text-blue-600">
+                      <Edit className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="lg:col-span-1">
+          {selectedModel && (
+            <div className="border rounded-lg p-4 sticky top-4">
+              <h3 className="font-semibold mb-4">Model Details: {selectedModel.name}</h3>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium mb-2">Entities</h4>
+                  <div className="space-y-1">
+                    {selectedModel.entities.map(entity => (
+                      <div key={entity} className="text-sm bg-blue-50 px-2 py-1 rounded">
+                        {entity}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-medium mb-2">Dimensions</h4>
+                  <div className="space-y-1">
+                    {selectedModel.dimensions.map(dim => (
+                      <div key={dim} className="text-sm bg-green-50 px-2 py-1 rounded">
+                        {dim}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-medium mb-2">Measures</h4>
+                  <div className="space-y-1">
+                    {selectedModel.measures.map(measure => (
+                      <div key={measure} className="text-sm bg-purple-50 px-2 py-1 rounded">
+                        {measure}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setYamlOutput(generateYAML(selectedModel))}
+                  className="w-full bg-gray-600 text-white px-3 py-2 rounded text-sm"
+                >
+                  Generate YAML
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const MetricsCatalog = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Metrics Catalog</h2>
+        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+          <Plus className="w-4 h-4" />
+          New Metric
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {metrics.map(metric => (
+          <div key={metric.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div className="flex justify-between items-start mb-3">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-blue-600" />
+                <h3 className="font-semibold">{metric.label}</h3>
+              </div>
+              <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">
+                {metric.status}
+              </span>
+            </div>
+            <p className="text-gray-600 text-sm mb-3">{metric.description}</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="font-medium">Type:</span>
+                <span className="text-gray-600">{metric.type}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">Model:</span>
+                <span className="text-gray-600">{metric.model}</span>
+              </div>
+            </div>
+            <div className="flex gap-2 mt-4">
+              <button 
+                onClick={() => setSelectedMetric(metric)}
+                className="flex-1 bg-blue-50 text-blue-600 px-3 py-2 rounded text-sm"
+              >
+                View Details
+              </button>
+              <button className="bg-green-50 text-green-600 px-3 py-2 rounded text-sm">
+                <Play className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {selectedMetric && (
+        <div className="border rounded-lg p-6 bg-gray-50">
+          <h3 className="font-semibold text-lg mb-4">Metric Details: {selectedMetric.label}</h3>
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <h4 className="font-medium mb-2">Configuration</h4>
+              <pre className="bg-white p-3 rounded border text-sm overflow-auto">
+{`metrics:
+  - name: ${selectedMetric.name}
+    label: ${selectedMetric.label}
+    description: ${selectedMetric.description}
+    type: ${selectedMetric.type}
+    type_params:
+      measure: ${selectedMetric.type_params.measure}`}
+              </pre>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2">Usage Examples</h4>
+              <div className="bg-white p-3 rounded border text-sm space-y-2">
+                <div>
+                  <span className="font-mono text-blue-600">SELECT</span>
+                  <span className="font-mono"> {selectedMetric.name}</span>
+                </div>
+                <div>
+                  <span className="font-mono text-blue-600">FROM</span>
+                  <span className="font-mono"> semantic_layer</span>
+                </div>
+                <div>
+                  <span className="font-mono text-blue-600">GROUP BY</span>
+                  <span className="font-mono"> date_month</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const QueryInterface = () => (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold">Query Interface</h2>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Natural Language Query</label>
+            <textarea
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="e.g., Show me total revenue by month for the last 3 months"
+              className="w-full h-32 border rounded-lg p-3 resize-none"
+            />
+          </div>
+          
+          <div className="flex gap-2">
+            <button 
+              onClick={executeQuery}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+            >
+              <Play className="w-4 h-4" />
+              Execute Query
+            </button>
+            <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg flex items-center gap-2">
+              <Code className="w-4 h-4" />
+              View SQL
+            </button>
+          </div>
+
+          <div>
+            <h3 className="font-medium mb-2">Generated SQL</h3>
+            <pre className="bg-gray-100 p-3 rounded text-sm overflow-auto">
+{`SELECT 
+  date_month,
+  SUM(revenue) as total_revenue,
+  COUNT(*) as order_count
+FROM semantic_layer.orders
+WHERE date_month >= '2024-01-01'
+GROUP BY date_month
+ORDER BY date_month`}
+            </pre>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="font-medium">Query Results</h3>
+          {queryResults ? (
+            <div className="border rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left p-3 font-medium">Date</th>
+                    <th className="text-left p-3 font-medium">Revenue</th>
+                    <th className="text-left p-3 font-medium">Orders</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {queryResults.map((row, index) => (
+                    <tr key={index} className="border-t">
+                      <td className="p-3">{row.date}</td>
+                      <td className="p-3">${row.revenue.toLocaleString()}</td>
+                      <td className="p-3">{row.orders}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="p-3 bg-gray-50 border-t flex justify-end">
+                <button className="bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center gap-1">
+                  <Download className="w-4 h-4" />
+                  Export CSV
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center text-gray-500">
+              Execute a query to see results here
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const ConfigManager = () => (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold">Configuration Manager</h2>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="font-medium">YAML Configuration</h3>
+            <div className="flex gap-2">
+              <button className="bg-green-600 text-white px-3 py-2 rounded text-sm flex items-center gap-1">
+                <CheckCircle className="w-4 h-4" />
+                Validate
+              </button>
+              <button className="bg-blue-600 text-white px-3 py-2 rounded text-sm">
+                Save
+              </button>
+            </div>
+          </div>
+          <textarea
+            value={yamlOutput}
+            onChange={(e) => setYamlOutput(e.target.value)}
+            className="w-full h-96 border rounded-lg p-3 font-mono text-sm"
+            placeholder="Select a model to generate YAML configuration..."
+          />
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="font-medium">Validation Results</h3>
+          <div className="border rounded-lg p-4">
+            <div className="flex items-center gap-2 text-green-600 mb-3">
+              <CheckCircle className="w-5 h-5" />
+              <span className="font-medium">Configuration Valid</span>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span>Semantic models syntax valid</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span>All referenced models exist</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span>Measure aggregations defined</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-yellow-500" />
+                <span>Warning: Consider adding time dimensions</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="font-medium mb-2">Quick Actions</h3>
+            <div className="space-y-2">
+              <button className="w-full bg-gray-100 text-gray-700 px-3 py-2 rounded text-left text-sm">
+                Generate documentation
+              </button>
+              <button className="w-full bg-gray-100 text-gray-700 px-3 py-2 rounded text-left text-sm">
+                Export to file
+              </button>
+              <button className="w-full bg-gray-100 text-gray-700 px-3 py-2 rounded text-left text-sm">
+                Deploy to production
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center gap-3">
+              <Database className="w-8 h-8 text-blue-600" />
+              <h1 className="text-2xl font-bold text-gray-900">dbt Semantic Layer</h1>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search models, metrics..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-2 border rounded-lg w-64"
+                />
+              </div>
+              <button className="p-2 text-gray-500 hover:text-gray-700">
+                <Settings className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+          
+          <nav className="flex space-x-8">
+            {[
+              { id: 'models', label: 'Semantic Models', icon: Database },
+              { id: 'metrics', label: 'Metrics', icon: BarChart3 },
+              { id: 'query', label: 'Query', icon: Play },
+              { id: 'config', label: 'Configuration', icon: Settings }
+            ].map(tab => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === tab.id
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {activeTab === 'models' && <ModelBuilder />}
+        {activeTab === 'metrics' && <MetricsCatalog />}
+        {activeTab === 'query' && <QueryInterface />}
+        {activeTab === 'config' && <ConfigManager />}
+      </div>
+    </div>
+  );
+};
+
+export default DBTSemanticLayerTool;
