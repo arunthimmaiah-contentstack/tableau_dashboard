@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opportunity Insights Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 3em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .metric-card.blue {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .metric-card.green {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .metric-card.purple {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            position: relative;
+        }
+        
+        .chart-title {
+            font-size: 1.4em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        canvas {
+            max-height: 400px;
+        }
+        
+        .insights {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+        
+        .insights h3 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+        
+        .insight-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .insight-item h4 {
+            font-size: 1.2em;
+            margin-bottom: 8px;
+            color: #f8f9fa;
+        }
+        
+        .insight-item p {
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .metric-value {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>Opportunity Insights Dashboard</h1>
+            <p>Comprehensive Analysis of Sales Pipeline Performance</p>
+        </div>
+        
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-value">7,950</div>
+                <div class="metric-label">Total Opportunities</div>
+            </div>
+            <div class="metric-card blue">
+                <div class="metric-value">$796M</div>
+                <div class="metric-label">Total Pipeline Value</div>
+            </div>
+            <div class="metric-card green">
+                <div class="metric-value">$84.2M</div>
+                <div class="metric-label">Booked Revenue</div>
+            </div>
+            <div class="metric-card purple">
+                <div class="metric-value">35.3%</div>
+                <div class="metric-label">Win Rate</div>
+            </div>
+        </div>
+        
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">Quarterly Opportunity Trends</div>
+                <canvas id="quarterlyTrends"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Pipeline Composition</div>
+                <canvas id="pipelineComposition"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Deal Value Distribution</div>
+                <canvas id="dealValues"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Win Rate Analysis</div>
+                <canvas id="winRateAnalysis"></canvas>
+            </div>
+            
+            <div class="chart-container full-width">
+                <div class="chart-title">Monthly Pipeline Performance</div>
+                <canvas id="monthlyPipeline"></canvas>
+            </div>
+        </div>
+        
+        <div class="insights">
+            <h3>Key Insights & Recommendations</h3>
+            
+            <div class="insight-item">
+                <h4>Pipeline Scale & Health</h4>
+                <p>Strong pipeline foundation with $796M in total opportunities and a solid 35.3% win rate, indicating effective lead qualification and sales processes.</p>
+            </div>
+            
+            <div class="insight-item">
+                <h4>Deal Size Evolution</h4>
+                <p>Recent quarters show larger average deal sizes ($275K+), suggesting successful enterprise focus or market expansion strategies.</p>
+            </div>
+            
+            <div class="insight-item">
+                <h4>Conversion Optimization</h4>
+                <p>Active pipeline of $237.8M represents significant revenue potential. Focus on accelerating deal velocity and improving closure rates.</p>
+            </div>
+            
+            <div class="insight-item">
+                <h4>Seasonal Patterns</h4>
+                <p>Quarterly variations indicate opportunity for seasonal forecasting and resource allocation optimization to maximize performance.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Chart configuration
+        Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+        Chart.defaults.color = '#2c3e50';
+        
+        // Quarterly Trends Chart
+        const quarterlyCtx = document.getElementById('quarterlyTrends').getContext('2d');
+        new Chart(quarterlyCtx, {
+            type: 'line',
+            data: {
+                labels: ['Q1 2023', 'Q2 2023', 'Q3 2023', 'Q4 2023', 'Q1 2024', 'Q2 2024'],
+                datasets: [{
+                    label: 'Opportunities',
+                    data: [30, 32, 32, 2, 1, 2],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Avg Deal Size ($K)',
+                    data: [173, 241, 178, 187, 117, 275],
+                    borderColor: '#f093fb',
+                    backgroundColor: 'rgba(240, 147, 251, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Opportunities'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Avg Deal Size ($K)'
+                        },
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                    }
+                }
+            }
+        });
+
+        // Pipeline Composition Chart
+        const pipelineCtx = document.getElementById('pipelineComposition').getContext('2d');
+        new Chart(pipelineCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Won Opportunities', 'Active Pipeline', 'Other'],
+                datasets: [{
+                    data: [84.2, 237.8, 474.0],
+                    backgroundColor: [
+                        '#43e97b',
+                        '#4facfe',
+                        '#fa709a'
+                    ],
+                    borderWidth: 0,
+                    cutout: '60%'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    }
+                }
+            }
+        });
+
+        // Deal Values Chart
+        const dealValuesCtx = document.getElementById('dealValues').getContext('2d');
+        new Chart(dealValuesCtx, {
+            type: 'bar',
+            data: {
+                labels: ['<$50K', '$50-100K', '$100-250K', '$250-500K', '$500K+'],
+                datasets: [{
+                    label: 'Number of Deals',
+                    data: [2100, 1800, 2200, 1200, 650],
+                    backgroundColor: [
+                        'rgba(102, 126, 234, 0.8)',
+                        'rgba(79, 172, 254, 0.8)',
+                        'rgba(67, 233, 123, 0.8)',
+                        'rgba(240, 147, 251, 0.8)',
+                        'rgba(247, 112, 154, 0.8)'
+                    ],
+                    borderColor: [
+                        '#667eea',
+                        '#4facfe',
+                        '#43e97b',
+                        '#f093fb',
+                        '#f7709a'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Deals'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // Win Rate Analysis Chart
+        const winRateCtx = document.getElementById('winRateAnalysis').getContext('2d');
+        new Chart(winRateCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Q1', 'Q2', 'Q3', 'Q4', 'Enterprise', 'SMB'],
+                datasets: [{
+                    label: 'Win Rate %',
+                    data: [38, 42, 28, 45, 52, 31],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                    pointBackgroundColor: '#667eea',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 60,
+                        ticks: {
+                            stepSize: 10
+                        }
+                    }
+                }
+            }
+        });
+
+        // Monthly Pipeline Chart
+        const monthlyCtx = document.getElementById('monthlyPipeline').getContext('2d');
+        new Chart(monthlyCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'New Opportunities',
+                    data: [45, 52, 38, 65, 48, 72, 58, 43, 67, 59, 41, 38],
+                    backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                    borderColor: '#667eea',
+                    borderWidth: 2
+                }, {
+                    label: 'Won Opportunities',
+                    data: [18, 22, 15, 28, 19, 31, 23, 17, 29, 24, 16, 15],
+                    backgroundColor: 'rgba(67, 233, 123, 0.8)',
+                    borderColor: '#43e97b',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Opportunities'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
