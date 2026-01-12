@@ -3,207 +3,259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1400, initial-scale=1.0">
-    <title>Paid Media Dashboard - Tableau Prototype</title>
+    <title>Paid Media Dashboard - High Contrast</title>
     <style>
-        /* --- TABLEAU SPECIFIC VARIABLES --- */
+        /* --- UPDATED VARIABLES (Brighter & Bigger) --- */
         :root {
-            --tab-bg: #F5F5F5;         /* Standard Dashboard Grey Background */
-            --sheet-bg: #FFFFFF;       /* Worksheet White */
-            --tab-blue: #1F77B4;       /* Tableau Standard Blue */
-            --tab-text: #333333;       /* Tableau Dark Grey Text */
-            --border-color: #D3D3D3;   /* Light Grey Borders */
-            --hover-blue: #E1F0F8;     /* Selection Highlight */
-            --font-stack: 'Benton Sans', 'Segoe UI', Arial, sans-serif; /* Mimics Tableau Font */
+            /* Backgrounds */
+            --bg-app: #F0F4F8;         /* Cool light grey-blue background */
+            --bg-card: #FFFFFF;        /* Pure white for cards */
+            
+            /* Typography Scale */
+            --font-base: 14px;
+            --font-lg: 16px;
+            --font-xl: 20px;
+            --font-kpi: 42px;          /* Massive KPI numbers */
+            
+            /* Colors */
+            --brand-primary: #0052CC;  /* Bright vivid blue */
+            --brand-secondary: #36B37E;/* Vivid Green */
+            --brand-danger: #FF5630;   /* Vivid Red */
+            --text-dark: #172B4D;      /* High contrast dark navy text */
+            --text-muted: #5E6C84;     /* Medium grey */
+            
+            /* Effects */
+            --shadow-card: 0 4px 6px rgba(9, 30, 66, 0.08); /* Soft lift */
+            --border-card: 1px solid #DFE1E6;
         }
 
         body {
-            font-family: var(--font-stack);
-            background-color: #FFFFFF;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-app);
             margin: 0;
             padding: 0;
-            color: var(--tab-text);
+            color: var(--text-dark);
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            height: 100vh;
             overflow: hidden;
         }
 
-        /* --- 1. TABLEAU SERVER TOOLBAR SIMULATION --- */
+        /* --- 1. TOOLBAR (Subtle but clear) --- */
         .tableau-toolbar {
-            height: 40px;
-            background-color: #F9F9F9;
-            border-bottom: 1px solid #E0E0E0;
+            background: #FFFFFF;
+            height: 44px;
+            border-bottom: 1px solid #EBECF0;
             display: flex;
             align-items: center;
-            padding: 0 15px;
-            gap: 20px;
+            padding: 0 20px;
+            gap: 25px;
             font-size: 13px;
-            color: #666;
+            color: var(--text-muted);
         }
-        .tb-icon { cursor: pointer; opacity: 0.7; }
-        .tb-icon:hover { opacity: 1; }
+        .tb-icon { font-weight: 500; cursor: pointer; }
+        .tb-icon:hover { color: var(--brand-primary); }
 
-        /* --- 2. DASHBOARD CANVAS --- */
+        /* --- 2. CANVAS --- */
         .dashboard-canvas {
-            background-color: var(--tab-bg);
             flex: 1;
-            padding: 20px;
+            padding: 24px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
         }
 
-        /* --- 3. HEADER ZONE --- */
+        /* --- 3. HEADER --- */
         .header-container {
-            background: var(--sheet-bg);
-            border: 1px solid var(--border-color);
-            padding: 15px 20px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            box-shadow: var(--shadow-card);
+            padding: 20px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
         .dash-title {
-            font-size: 22px;
-            font-weight: 300; /* Tableau titles are usually light */
-            color: #2c2c2c;
-            margin: 0;
+            font-size: 26px; /* Bigger Title */
+            font-weight: 700;
+            margin: 0 0 5px 0;
+            color: var(--text-dark);
+        }
+        .dash-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 500;
         }
 
-        /* --- 4. FILTERS & PARAMETERS CONTAINER --- */
+        /* --- 4. FILTERS ROW --- */
         .filters-container {
-            background: var(--sheet-bg);
-            border: 1px solid var(--border-color);
-            padding: 10px 20px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            box-shadow: var(--shadow-card);
+            padding: 16px 24px;
             display: flex;
-            align-items: center;
-            gap: 20px;
+            align-items: flex-end; /* Align labels and inputs */
+            gap: 24px;
             flex-wrap: wrap;
         }
-        .filter-group { display: flex; flex-direction: column; gap: 4px; }
-        .filter-label { font-size: 11px; text-transform: uppercase; color: #777; font-weight: 700; letter-spacing: 0.5px;}
-        .tableau-select {
-            padding: 5px 8px;
-            border: 1px solid #ccc;
-            border-radius: 2px;
-            font-size: 13px;
-            background: white;
-            min-width: 140px;
-            color: #333;
-            cursor: pointer;
+        .filter-group { display: flex; flex-direction: column; gap: 6px; }
+        .filter-label { 
+            font-size: 12px; 
+            text-transform: uppercase; 
+            color: var(--text-muted); 
+            font-weight: 700; 
+            letter-spacing: 0.5px;
         }
-        .tableau-select:hover { border-color: #999; }
+        .tableau-select {
+            padding: 8px 12px;
+            font-size: 14px; /* Larger input text */
+            border: 2px solid #DFE1E6;
+            border-radius: 4px;
+            background: #FAFBFC;
+            min-width: 160px;
+            color: var(--text-dark);
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .tableau-select:hover { border-color: #B3BAC5; }
+        .tableau-select:focus { border-color: var(--brand-primary); outline: none; }
 
-        /* --- 5. NAVIGATION (Simulating Navigation Buttons) --- */
+        /* --- 5. NAVIGATION TABS (Bigger targets) --- */
         .nav-container {
             display: flex;
-            gap: 1px; /* Gap for border simulation */
-            background: var(--border-color); /* Creates the border effect */
-            border: 1px solid var(--border-color);
+            background: transparent;
+            gap: 10px;
+            margin-bottom: 5px;
         }
         .nav-btn {
             flex: 1;
-            padding: 12px 0;
-            background: var(--sheet-bg);
-            border: none;
+            padding: 16px;
+            background: var(--bg-card);
+            border: 1px solid transparent;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-muted);
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 400;
-            color: #555;
-            transition: background 0.2s;
-            text-align: center;
+            transition: all 0.2s ease;
         }
-        .nav-btn:hover { background: #f0f0f0; }
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-card);
+            color: var(--brand-primary);
+        }
         .nav-btn.active {
-            background: #EBEBEB; /* Tableau "Selected" Button State */
-            color: #000;
-            font-weight: 700;
-            border-bottom: 3px solid var(--tab-blue);
+            background: var(--brand-primary);
+            color: #FFFFFF;
+            box-shadow: 0 4px 12px rgba(0, 82, 204, 0.3);
         }
 
-        /* --- 6. WORKSHETS / CHARTS (Grid Layout) --- */
+        /* --- 6. CONTENT ZONES --- */
         .content-zone { display: none; }
-        .content-zone.active { display: block; animation: fadeEffect 0.4s; }
+        .content-zone.active { display: block; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 
-        @keyframes fadeEffect { from {opacity: 0;} to {opacity: 1;} }
+        @keyframes slideUp { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
 
-        /* Grid for KPI BANs */
+        /* KPI Cards Grid */
         .ban-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 15px;
+            gap: 24px;
+            margin-bottom: 24px;
         }
         .worksheet-ban {
-            background: var(--sheet-bg);
-            border: 1px solid var(--border-color);
-            padding: 15px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            box-shadow: var(--shadow-card);
+            padding: 24px;
             text-align: center;
-            height: 100px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            border-top: 4px solid transparent; /* Colored top borders via JS later or hardcoded */
+            position: relative;
+            overflow: hidden;
         }
-        .ban-label { font-size: 14px; color: #666; margin-bottom: 5px; }
-        .ban-value { font-size: 32px; font-weight: 700; color: var(--tab-blue); }
-        .ban-sub { font-size: 12px; color: #2ca02c; font-weight: 600; } /* Green for positive */
-        .ban-sub.neg { color: #d62728; } /* Red for negative */
+        /* Top border accents for KPIs */
+        .worksheet-ban:nth-child(1) { border-top-color: var(--brand-primary); }
+        .worksheet-ban:nth-child(2) { border-top-color: var(--brand-secondary); }
+        .worksheet-ban:nth-child(3) { border-top-color: #6554C0; }
 
-        /* Grid for Charts */
+        .ban-label { 
+            font-size: 15px; 
+            font-weight: 600;
+            color: var(--text-muted); 
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .ban-value { 
+            font-size: var(--font-kpi); 
+            font-weight: 800; 
+            color: var(--text-dark); 
+            display: block;
+            margin-bottom: 4px;
+        }
+        .ban-sub { 
+            font-size: 14px; 
+            font-weight: 600; 
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        } 
+        .ban-sub.pos { color: #006644; background: #E3FCEF; } /* Green Badge */
+        .ban-sub.neg { color: #BF2600; background: #FFEBE6; } /* Red Badge */
+
+        /* Chart Grid */
         .chart-row {
             display: grid;
             grid-template-columns: 2fr 1fr;
-            gap: 15px;
-            height: 400px;
+            gap: 24px;
+            height: 450px; /* Taller charts */
         }
         .worksheet-chart {
-            background: var(--sheet-bg);
-            border: 1px solid var(--border-color);
-            padding: 15px;
-            position: relative;
+            background: var(--bg-card);
+            border-radius: 8px;
+            box-shadow: var(--shadow-card);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
         }
         .sheet-title {
-            font-size: 15px;
+            font-size: 18px; /* Bigger Headers */
             font-weight: 700;
-            color: #333;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 8px;
-            display: block;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #F4F5F7;
         }
 
-        /* --- CSS DRAWN CHARTS (For fidelity) --- */
-        /* Bar Chart Simulation */
-        .css-bar-chart {
-            display: flex; align-items: flex-end; gap: 10px; height: 80%; padding-top: 20px;
-        }
-        .bar { width: 12%; background: #A0CBE8; transition: height 0.5s; position: relative; }
-        .bar.stack-top { background: var(--tab-blue); }
-        .bar:hover { opacity: 0.8; cursor: crosshair; }
-
-        /* Line Chart Simulation */
-        .css-line-chart {
-            width: 100%; height: 70%;
-            border-left: 1px solid #ddd; border-bottom: 1px solid #ddd;
-            position: relative;
-        }
-        .line-segment {
-            position: absolute; height: 2px; background: var(--tab-blue); transform-origin: left center;
-        }
+        /* --- VISUALIZATIONS (CSS Art) --- */
+        .chart-container { flex: 1; position: relative; }
+        
+        /* Line Chart Logic */
+        .css-line-chart { width: 100%; height: 100%; border-left: 2px solid #EBECF0; border-bottom: 2px solid #EBECF0; position: relative; }
+        .line-segment { position: absolute; height: 3px; background: var(--brand-primary); border-radius: 2px; }
+        
+        /* Bar Chart Logic */
+        .css-bar-chart { display: flex; align-items: flex-end; gap: 15px; height: 100%; padding-bottom: 10px; }
+        .bar-col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; }
+        .bar-seg { width: 100%; background: var(--brand-primary); margin-bottom: 2px; transition: opacity 0.2s; }
+        .bar-seg:hover { opacity: 0.8; }
         
     </style>
 </head>
 <body>
 
     <div class="tableau-toolbar">
-        <span style="font-weight:bold; color:#333;">Tableau</span>
+        <span style="font-weight:800; font-size:16px; color:#172B4D;">Tableau</span>
         <span class="tb-icon">↩ Undo</span>
         <span class="tb-icon">↪ Redo</span>
-        <span class="tb-icon">↺ Revert</span>
         <span class="tb-icon">⤓ Download</span>
         <span style="flex:1;"></span>
-        <span class="tb-icon">Full Screen</span>
+        <button style="background:var(--brand-primary); color:white; border:none; padding:8px 16px; border-radius:4px; cursor:pointer; font-weight:600;">Share</button>
     </div>
 
     <div class="dashboard-canvas">
@@ -211,155 +263,132 @@
         <div class="header-container">
             <div>
                 <h1 class="dash-title">Paid Media Performance Dashboard</h1>
-                <span style="font-size:12px; color:#888;">Data Source: Snowflake (Extract) | Updated: Jan 12, 06:00 AM</span>
+                <span class="dash-subtitle">Unified View: Salesforce, Lytics & Google Analytics 4</span>
             </div>
-            <div style="width:40px; height:40px; background:#ddd; border-radius:50%;"></div> 
+            <div style="text-align:right;">
+                <div style="font-size:12px; font-weight:700; color:var(--text-muted);">LAST REFRESH</div>
+                <div style="font-size:14px; font-weight:600; color:var(--brand-secondary);">● Live: Just now</div>
+            </div>
         </div>
 
         <div class="filters-container">
             <div class="filter-group">
-                <span class="filter-label">Date Period</span>
-                <select class="tableau-select"><option>Last Month</option><option>This Quarter</option><option>YTD</option></select>
+                <span class="filter-label">Time Period</span>
+                <select class="tableau-select"><option>This Quarter (Q1)</option><option>Last Month</option><option>Year to Date</option></select>
             </div>
             <div class="filter-group">
-                <span class="filter-label">Unified Source</span>
-                <select class="tableau-select"><option>(All)</option><option>LinkedIn</option><option>Google Ads</option><option>Meta</option></select>
+                <span class="filter-label">Source Channel</span>
+                <select class="tableau-select"><option>All Sources</option><option>LinkedIn Ads</option><option>Google Search</option></select>
             </div>
             <div class="filter-group">
-                <span class="filter-label">Campaign Name</span>
-                <select class="tableau-select"><option>(All)</option><option>Q1_Demand_Gen</option><option>Retargeting_AlwaysOn</option></select>
+                <span class="filter-label">Campaign Type</span>
+                <select class="tableau-select"><option>All Campaigns</option><option>Demand Gen</option><option>Brand Awareness</option></select>
             </div>
             <div class="filter-group">
                 <span class="filter-label">Account Tier</span>
-                <select class="tableau-select"><option>(All)</option><option>Strategic</option><option>Target</option></select>
+                <select class="tableau-select"><option>Strategic & Target</option><option>Enterprise</option><option>Mid-Market</option></select>
             </div>
             <div style="flex:1; text-align:right;">
-                <button style="padding:5px 10px; background:none; border:1px solid #ccc; cursor:pointer;">Reset Filters</button>
+                <a href="#" style="font-size:13px; color:var(--brand-primary); text-decoration:none; font-weight:600;">Reset All Filters</a>
             </div>
         </div>
 
         <nav class="nav-container">
-            <button class="nav-btn" onclick="openView('view-traffic', this)">1. Account Traffic</button>
-            <button class="nav-btn" onclick="openView('view-leads', this)">2. Lead Quality</button>
-            <button class="nav-btn active" onclick="openView('view-mqo', this)">3. MQO Analysis</button>
-            <button class="nav-btn" onclick="openView('view-pipeline', this)">4. Pipeline Inf.</button>
-            <button class="nav-btn" onclick="openView('view-progression', this)">5. Progression</button>
+            <button class="nav-btn" onclick="openView('view-traffic', this)">Account Traffic</button>
+            <button class="nav-btn" onclick="openView('view-leads', this)">Lead Quality</button>
+            <button class="nav-btn active" onclick="openView('view-mqo', this)">MQO Analysis</button>
+            <button class="nav-btn" onclick="openView('view-pipeline', this)">Pipeline Inf.</button>
+            <button class="nav-btn" onclick="openView('view-progression', this)">Progression</button>
         </nav>
 
         <div id="view-mqo" class="content-zone active">
+            
             <div class="ban-grid">
                 <div class="worksheet-ban">
                     <span class="ban-label">Total MQO Influence</span>
                     <span class="ban-value">158</span>
-                    <span class="ban-sub">▲ 12% vs PM</span>
+                    <span class="ban-sub pos">▲ 12.4% vs Last Month</span>
                 </div>
                 <div class="worksheet-ban">
-                    <span class="ban-label">Target MQO Influence</span>
+                    <span class="ban-label">Target Account MQOs</span>
                     <span class="ban-value">45</span>
-                    <span class="ban-sub neg">▼ 2% vs PM</span>
+                    <span class="ban-sub neg">▼ 2.1% vs Last Month</span>
                 </div>
                 <div class="worksheet-ban">
-                    <span class="ban-label">Avg Days to MQO</span>
+                    <span class="ban-label">Avg Days to Convert</span>
                     <span class="ban-value">12.5</span>
-                    <span class="ban-sub" style="color:#666;">Global Avg: 14.0</span>
+                    <span class="ban-sub" style="background:#EBECF0; color:#42526E;">Goal: < 14 Days</span>
                 </div>
             </div>
 
             <div class="chart-row">
                 <div class="worksheet-chart">
-                    <span class="sheet-title">MQO Trend Over Time (Split by Source)</span>
-                    <div class="css-line-chart" style="margin-top:40px;">
-                         <div class="line-segment" style="width:20%; top:80%; left:0; transform:rotate(-10deg);"></div>
-                        <div class="line-segment" style="width:20%; top:65%; left:20%; transform:rotate(-25deg);"></div>
-                        <div class="line-segment" style="width:20%; top:35%; left:40%; transform:rotate(5deg);"></div>
-                        <div class="line-segment" style="width:20%; top:40%; left:60%; transform:rotate(-15deg);"></div>
-                        <div class="line-segment" style="width:20%; top:20%; left:80%; transform:rotate(0deg);"></div>
+                    <span class="sheet-title">MQO Influence Trend (Over Time)</span>
+                    <div class="chart-container">
+                        <div class="css-line-chart">
+                             <div class="line-segment" style="width:20%; top:80%; left:0; transform:rotate(-15deg);"></div>
+                            <div class="line-segment" style="width:20%; top:60%; left:20%; transform:rotate(-20deg);"></div>
+                            <div class="line-segment" style="width:20%; top:35%; left:40%; transform:rotate(5deg);"></div>
+                            <div class="line-segment" style="width:20%; top:45%; left:60%; transform:rotate(-10deg);"></div>
+                            <div class="line-segment" style="width:20%; top:20%; left:80%; transform:rotate(0deg);"></div>
+                            <div style="position:absolute; width:100%; top:25%; border-top:1px dashed #eee;"></div>
+                            <div style="position:absolute; width:100%; top:50%; border-top:1px dashed #eee;"></div>
+                            <div style="position:absolute; width:100%; top:75%; border-top:1px dashed #eee;"></div>
+                        </div>
                     </div>
-                    <div style="font-size:10px; color:#999; margin-top:10px; text-align:center;">Date (Month)</div>
                 </div>
                 <div class="worksheet-chart">
-                    <span class="sheet-title">MQO Share by Sub-Region</span>
-                    <div style="width:140px; height:140px; border-radius:50%; background:conic-gradient(#1F77B4 0% 60%, #FF7F0E 60% 85%, #d3d3d3 85% 100%); margin: 40px auto;"></div>
+                    <span class="sheet-title">Share by Region</span>
+                    <div class="chart-container" style="display:flex; justify-content:center; align-items:center;">
+                        <div style="width:180px; height:180px; border-radius:50%; background:conic-gradient(#0052CC 0% 65%, #36B37E 65% 85%, #FF5630 85% 100%); position:relative;">
+                            <div style="position:absolute; width:100px; height:100px; background:white; border-radius:50%; top:40px; left:40px; display:flex; align-items:center; justify-content:center;">
+                                <span style="font-weight:700; color:#172B4D; font-size:24px;">65%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align:center; font-size:12px; color:#5E6C84; margin-top:10px;">
+                        <span style="color:#0052CC">● North America</span> &nbsp; 
+                        <span style="color:#36B37E">● EMEA</span>
+                    </div>
                 </div>
             </div>
-            
-            <div class="worksheet-chart" style="margin-top:15px; height:250px;">
-                <span class="sheet-title">MQO Influence by Campaign (Drill-down)</span>
-                <div class="css-bar-chart">
-                    <div class="bar" style="height:40%;"><div style="height:50%; background:#1F77B4; width:100%;"></div></div>
-                    <div class="bar" style="height:60%;"><div style="height:30%; background:#1F77B4; width:100%;"></div></div>
-                    <div class="bar" style="height:85%;"><div style="height:60%; background:#1F77B4; width:100%;"></div></div>
-                    <div class="bar" style="height:55%;"><div style="height:40%; background:#1F77B4; width:100%;"></div></div>
-                    <div class="bar" style="height:70%;"><div style="height:20%; background:#1F77B4; width:100%;"></div></div>
+
+            <div class="worksheet-chart" style="margin-top:24px; height:300px;">
+                <span class="sheet-title">Campaign Performance Detail</span>
+                <div class="chart-container">
+                    <div class="css-bar-chart">
+                        <div class="bar-col"><div class="bar-seg" style="height:40%; background:#0052CC;"></div><div class="bar-seg" style="height:20%; background:#6554C0;"></div></div>
+                        <div class="bar-col"><div class="bar-seg" style="height:60%; background:#0052CC;"></div><div class="bar-seg" style="height:10%; background:#6554C0;"></div></div>
+                        <div class="bar-col"><div class="bar-seg" style="height:30%; background:#0052CC;"></div><div class="bar-seg" style="height:30%; background:#6554C0;"></div></div>
+                        <div class="bar-col"><div class="bar-seg" style="height:80%; background:#0052CC;"></div><div class="bar-seg" style="height:15%; background:#6554C0;"></div></div>
+                        <div class="bar-col"><div class="bar-seg" style="height:50%; background:#0052CC;"></div><div class="bar-seg" style="height:25%; background:#6554C0;"></div></div>
+                    </div>
                 </div>
-            </div>
+             </div>
         </div>
 
         <div id="view-traffic" class="content-zone">
-            <div class="ban-grid">
-                <div class="worksheet-ban">
-                    <span class="ban-label">Total Sessions</span>
-                    <span class="ban-value">142.5K</span>
-                    <span class="ban-sub">▲ 5%</span>
-                </div>
-                <div class="worksheet-ban">
-                    <span class="ban-label">Target Account Sessions</span>
-                    <span class="ban-value">8,900</span>
-                    <span class="ban-sub">▲ 12%</span>
-                </div>
-                <div class="worksheet-ban">
-                    <span class="ban-label">Bounce Rate</span>
-                    <span class="ban-value">42%</span>
-                    <span class="ban-sub" style="color:#666;">-1% (Good)</span>
-                </div>
-            </div>
-            <div class="worksheet-chart" style="height:500px;">
-                <span class="sheet-title">Account Traffic Share by Source & Tier</span>
-                <div style="display:flex; justify-content:center; align-items:center; height:100%; color:#ccc;">
-                    [ Stacked Bar Chart Visual Placeholder ]
-                </div>
-            </div>
+            <div class="worksheet-ban"><span class="ban-value">Account Traffic View</span></div>
         </div>
-
+        <div id="view-leads" class="content-zone">
+            <div class="worksheet-ban"><span class="ban-value">Lead Quality View</span></div>
+        </div>
         <div id="view-pipeline" class="content-zone">
-             <div class="ban-grid">
-                <div class="worksheet-ban">
-                    <span class="ban-label">Influenced Pipeline ($)</span>
-                    <span class="ban-value">$4.2M</span>
-                </div>
-                <div class="worksheet-ban">
-                    <span class="ban-label">Influenced Deals (#)</span>
-                    <span class="ban-value">34</span>
-                </div>
-            </div>
-            <div class="worksheet-chart" style="height:400px;">
-                <span class="sheet-title">Pipeline Creation Over Time</span>
-                <div style="display:flex; justify-content:center; align-items:center; height:100%; color:#ccc;">
-                    [ Dual Axis Chart: Bars=Amt, Line=Count ]
-                </div>
-            </div>
+            <div class="worksheet-ban"><span class="ban-value">Pipeline View</span></div>
         </div>
-
-        <div id="view-leads" class="content-zone"><div class="worksheet-chart">Lead Quality Placeholder</div></div>
-        <div id="view-progression" class="content-zone"><div class="worksheet-chart">Progression Placeholder</div></div>
+         <div id="view-progression" class="content-zone">
+            <div class="worksheet-ban"><span class="ban-value">Progression View</span></div>
+        </div>
 
     </div>
 
     <script>
         function openView(viewId, btnElement) {
-            // 1. Hide all Content Zones
-            var contents = document.querySelectorAll('.content-zone');
-            contents.forEach(function(content) {
-                content.classList.remove('active');
-            });
-
-            // 2. Remove Active Class from all Nav Buttons
-            var btns = document.querySelectorAll('.nav-btn');
-            btns.forEach(function(btn) {
-                btn.classList.remove('active');
-            });
-
-            // 3. Activate selected View and Button
+            // Reset contents
+            document.querySelectorAll('.content-zone').forEach(el => el.classList.remove('active'));
+            // Reset buttons
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            // Activate new
             document.getElementById(viewId).classList.add('active');
             btnElement.classList.add('active');
         }
