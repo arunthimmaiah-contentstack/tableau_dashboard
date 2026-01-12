@@ -2,302 +2,367 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paid Media Dashboard Wireframe</title>
+    <meta name="viewport" content="width=1400, initial-scale=1.0">
+    <title>Paid Media Dashboard - Tableau Prototype</title>
     <style>
+        /* --- TABLEAU SPECIFIC VARIABLES --- */
         :root {
-            --primary: #2C3E50;
-            --accent: #3498DB;
-            --bg: #F5F7FA;
-            --border: #BDC3C7;
-            --text: #34495E;
+            --tab-bg: #F5F5F5;         /* Standard Dashboard Grey Background */
+            --sheet-bg: #FFFFFF;       /* Worksheet White */
+            --tab-blue: #1F77B4;       /* Tableau Standard Blue */
+            --tab-text: #333333;       /* Tableau Dark Grey Text */
+            --border-color: #D3D3D3;   /* Light Grey Borders */
+            --hover-blue: #E1F0F8;     /* Selection Highlight */
+            --font-stack: 'Benton Sans', 'Segoe UI', Arial, sans-serif; /* Mimics Tableau Font */
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: var(--font-stack);
+            background-color: #FFFFFF;
             margin: 0;
             padding: 0;
-            background-color: var(--bg);
-            color: var(--text);
+            color: var(--tab-text);
             display: flex;
             flex-direction: column;
             height: 100vh;
+            overflow: hidden;
         }
 
-        /* --- HEADER --- */
-        .header {
-            background-color: var(--primary);
-            color: white;
-            padding: 15px 25px;
+        /* --- 1. TABLEAU SERVER TOOLBAR SIMULATION --- */
+        .tableau-toolbar {
+            height: 40px;
+            background-color: #F9F9F9;
+            border-bottom: 1px solid #E0E0E0;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+        .tb-icon { cursor: pointer; opacity: 0.7; }
+        .tb-icon:hover { opacity: 1; }
+
+        /* --- 2. DASHBOARD CANVAS --- */
+        .dashboard-canvas {
+            background-color: var(--tab-bg);
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* --- 3. HEADER ZONE --- */
+        .header-container {
+            background: var(--sheet-bg);
+            border: 1px solid var(--border-color);
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-        .header h1 { margin: 0; font-size: 1.2rem; font-weight: 600; }
-        .header small { color: #BDC3C7; }
+        .dash-title {
+            font-size: 22px;
+            font-weight: 300; /* Tableau titles are usually light */
+            color: #2c2c2c;
+            margin: 0;
+        }
 
-        /* --- FILTERS --- */
-        .filter-bar {
-            background-color: white;
-            padding: 10px 25px;
-            border-bottom: 1px solid var(--border);
+        /* --- 4. FILTERS & PARAMETERS CONTAINER --- */
+        .filters-container {
+            background: var(--sheet-bg);
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
             display: flex;
-            gap: 15px;
+            align-items: center;
+            gap: 20px;
             flex-wrap: wrap;
         }
-        .filter-select {
-            padding: 6px 10px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            background: #fff;
-            color: var(--text);
-            font-size: 0.9rem;
+        .filter-group { display: flex; flex-direction: column; gap: 4px; }
+        .filter-label { font-size: 11px; text-transform: uppercase; color: #777; font-weight: 700; letter-spacing: 0.5px;}
+        .tableau-select {
+            padding: 5px 8px;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            font-size: 13px;
+            background: white;
             min-width: 140px;
+            color: #333;
+            cursor: pointer;
         }
-        .filter-label {
-            font-size: 0.75rem;
-            color: #7F8C8D;
-            display: block;
-            margin-bottom: 2px;
-        }
+        .tableau-select:hover { border-color: #999; }
 
-        /* --- NAVIGATION --- */
-        .nav-bar {
-            background-color: white;
-            padding: 0 25px;
-            border-bottom: 1px solid var(--border);
+        /* --- 5. NAVIGATION (Simulating Navigation Buttons) --- */
+        .nav-container {
             display: flex;
-            gap: 5px;
+            gap: 1px; /* Gap for border simulation */
+            background: var(--border-color); /* Creates the border effect */
+            border: 1px solid var(--border-color);
         }
         .nav-btn {
-            padding: 15px 20px;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
-            cursor: pointer;
-            font-weight: 500;
-            color: #7F8C8D;
-            transition: all 0.2s;
-        }
-        .nav-btn:hover { color: var(--accent); background-color: #f8f9fa; }
-        .nav-btn.active {
-            border-bottom-color: var(--accent);
-            color: var(--primary);
-            font-weight: 700;
-        }
-
-        /* --- MAIN CONTENT --- */
-        .main-content {
             flex: 1;
-            padding: 25px;
-            overflow-y: auto;
+            padding: 12px 0;
+            background: var(--sheet-bg);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 400;
+            color: #555;
+            transition: background 0.2s;
+            text-align: center;
+        }
+        .nav-btn:hover { background: #f0f0f0; }
+        .nav-btn.active {
+            background: #EBEBEB; /* Tableau "Selected" Button State */
+            color: #000;
+            font-weight: 700;
+            border-bottom: 3px solid var(--tab-blue);
         }
 
-        /* Section Layouts */
-        .section { display: none; } /* Hidden by default */
-        .section.active { display: block; animation: fadeIn 0.3s; }
+        /* --- 6. WORKSHETS / CHARTS (Grid Layout) --- */
+        .content-zone { display: none; }
+        .content-zone.active { display: block; animation: fadeEffect 0.4s; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeEffect { from {opacity: 0;} to {opacity: 1;} }
 
-        /* KPI Cards */
-        .kpi-row {
+        /* Grid for KPI BANs */
+        .ban-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
         }
-        .kpi-card {
-            background: white;
-            padding: 20px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .kpi-title { font-size: 0.85rem; color: #7F8C8D; text-transform: uppercase; letter-spacing: 0.5px; }
-        .kpi-value { font-size: 1.8rem; font-weight: 700; margin: 10px 0; color: var(--primary); }
-        .kpi-delta { font-size: 0.85rem; font-weight: 600; }
-        .kpi-delta.pos { color: #27AE60; }
-        .kpi-delta.neg { color: #C0392B; }
-
-        /* Chart Placeholders */
-        .chart-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr; /* 2/3 and 1/3 split */
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        .chart-box {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 20px;
-            min-height: 300px;
+        .worksheet-ban {
+            background: var(--sheet-bg);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            text-align: center;
+            height: 100px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            align-items: center;
-            text-align: center;
-            color: #BDC3C7;
         }
-        .chart-box h3 { color: var(--text); margin-bottom: 10px; margin-top: -20px;}
-        
-        /* Wireframe "X" for images */
-        .wireframe-x {
-            width: 80%;
-            height: 60%;
-            border: 2px dashed #ddd;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #fafafa;
+        .ban-label { font-size: 14px; color: #666; margin-bottom: 5px; }
+        .ban-value { font-size: 32px; font-weight: 700; color: var(--tab-blue); }
+        .ban-sub { font-size: 12px; color: #2ca02c; font-weight: 600; } /* Green for positive */
+        .ban-sub.neg { color: #d62728; } /* Red for negative */
+
+        /* Grid for Charts */
+        .chart-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 15px;
+            height: 400px;
+        }
+        .worksheet-chart {
+            background: var(--sheet-bg);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            position: relative;
+        }
+        .sheet-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            display: block;
         }
 
+        /* --- CSS DRAWN CHARTS (For fidelity) --- */
+        /* Bar Chart Simulation */
+        .css-bar-chart {
+            display: flex; align-items: flex-end; gap: 10px; height: 80%; padding-top: 20px;
+        }
+        .bar { width: 12%; background: #A0CBE8; transition: height 0.5s; position: relative; }
+        .bar.stack-top { background: var(--tab-blue); }
+        .bar:hover { opacity: 0.8; cursor: crosshair; }
+
+        /* Line Chart Simulation */
+        .css-line-chart {
+            width: 100%; height: 70%;
+            border-left: 1px solid #ddd; border-bottom: 1px solid #ddd;
+            position: relative;
+        }
+        .line-segment {
+            position: absolute; height: 2px; background: var(--tab-blue); transform-origin: left center;
+        }
+        
     </style>
 </head>
 <body>
 
-    <header class="header">
-        <div style="display:flex; align-items:center; gap:10px;">
-            <div style="width:24px; height:24px; background:rgba(255,255,255,0.3); border-radius:3px;"></div>
-            <h1>Paid Media Performance Dashboard</h1>
-        </div>
-        <small>Data Updated: Today, 6:00 AM</small>
-    </header>
+    <div class="tableau-toolbar">
+        <span style="font-weight:bold; color:#333;">Tableau</span>
+        <span class="tb-icon">↩ Undo</span>
+        <span class="tb-icon">↪ Redo</span>
+        <span class="tb-icon">↺ Revert</span>
+        <span class="tb-icon">⤓ Download</span>
+        <span style="flex:1;"></span>
+        <span class="tb-icon">Full Screen</span>
+    </div>
 
-    <section class="filter-bar">
-        <div>
-            <span class="filter-label">Date Range</span>
-            <select class="filter-select"><option>Last 30 Days</option><option>This Quarter</option></select>
-        </div>
-        <div>
-            <span class="filter-label">Unified Source</span>
-            <select class="filter-select"><option>All Sources</option><option>LinkedIn</option><option>Google</option></select>
-        </div>
-        <div>
-            <span class="filter-label">Campaign</span>
-            <select class="filter-select"><option>All Campaigns</option></select>
-        </div>
-        <div>
-            <span class="filter-label">Account Tier</span>
-            <select class="filter-select"><option>All Tiers</option><option>Strategic</option><option>Target</option></select>
-        </div>
-        <div>
-            <span class="filter-label">Region</span>
-            <select class="filter-select"><option>Global</option><option>NA</option><option>EMEA</option></select>
-        </div>
-    </section>
-
-    <nav class="nav-bar">
-        <button class="nav-btn" onclick="switchTab('traffic')">1. Account Traffic</button>
-        <button class="nav-btn" onclick="switchTab('leads')">2. Lead Quality</button>
-        <button class="nav-btn active" onclick="switchTab('mqo')">3. MQO Analysis</button>
-        <button class="nav-btn" onclick="switchTab('pipeline')">4. Pipeline Infl.</button>
-        <button class="nav-btn" onclick="switchTab('progress')">5. Progression</button>
-    </nav>
-
-    <main class="main-content">
-
-        <div id="traffic" class="section">
-            <div class="kpi-row">
-                <div class="kpi-card">
-                    <div class="kpi-title">Total Sessions</div>
-                    <div class="kpi-value">142,500</div>
-                    <div class="kpi-delta pos">▲ 5.2% vs prev</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-title">Target Account Sessions</div>
-                    <div class="kpi-value">8,900</div>
-                    <div class="kpi-delta pos">▲ 12.0% vs prev</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-title">Session Duration (Avg)</div>
-                    <div class="kpi-value">2m 34s</div>
-                    <div class="kpi-delta neg">▼ 0.5% vs prev</div>
-                </div>
+    <div class="dashboard-canvas">
+        
+        <div class="header-container">
+            <div>
+                <h1 class="dash-title">Paid Media Performance Dashboard</h1>
+                <span style="font-size:12px; color:#888;">Data Source: Snowflake (Extract) | Updated: Jan 12, 06:00 AM</span>
             </div>
-            <div class="chart-grid">
-                <div class="chart-box">
-                    <h3>Account Traffic Share by Source</h3>
-                    <div class="wireframe-x">[ Stacked Bar Chart ]<br>Y: Source | X: Views | Stack: Tier</div>
-                </div>
-                <div class="chart-box">
-                    <h3>Top Accounts List</h3>
-                    <div class="wireframe-x">[ Data Table ]<br>Account Name | Tier | Views</div>
-                </div>
+            <div style="width:40px; height:40px; background:#ddd; border-radius:50%;"></div> 
+        </div>
+
+        <div class="filters-container">
+            <div class="filter-group">
+                <span class="filter-label">Date Period</span>
+                <select class="tableau-select"><option>Last Month</option><option>This Quarter</option><option>YTD</option></select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Unified Source</span>
+                <select class="tableau-select"><option>(All)</option><option>LinkedIn</option><option>Google Ads</option><option>Meta</option></select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Campaign Name</span>
+                <select class="tableau-select"><option>(All)</option><option>Q1_Demand_Gen</option><option>Retargeting_AlwaysOn</option></select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Account Tier</span>
+                <select class="tableau-select"><option>(All)</option><option>Strategic</option><option>Target</option></select>
+            </div>
+            <div style="flex:1; text-align:right;">
+                <button style="padding:5px 10px; background:none; border:1px solid #ccc; cursor:pointer;">Reset Filters</button>
             </div>
         </div>
 
-        <div id="mqo" class="section active">
-            <div class="kpi-row">
-                <div class="kpi-card">
-                    <div class="kpi-title">Total MQO Influence</div>
-                    <div class="kpi-value">158</div>
-                    <div class="kpi-delta pos">▲ 12% MoM</div>
+        <nav class="nav-container">
+            <button class="nav-btn" onclick="openView('view-traffic', this)">1. Account Traffic</button>
+            <button class="nav-btn" onclick="openView('view-leads', this)">2. Lead Quality</button>
+            <button class="nav-btn active" onclick="openView('view-mqo', this)">3. MQO Analysis</button>
+            <button class="nav-btn" onclick="openView('view-pipeline', this)">4. Pipeline Inf.</button>
+            <button class="nav-btn" onclick="openView('view-progression', this)">5. Progression</button>
+        </nav>
+
+        <div id="view-mqo" class="content-zone active">
+            <div class="ban-grid">
+                <div class="worksheet-ban">
+                    <span class="ban-label">Total MQO Influence</span>
+                    <span class="ban-value">158</span>
+                    <span class="ban-sub">▲ 12% vs PM</span>
                 </div>
-                <div class="kpi-card">
-                    <div class="kpi-title">Target MQO Influence</div>
-                    <div class="kpi-value">45</div>
-                    <div class="kpi-delta neg">▼ 2% MoM</div>
+                <div class="worksheet-ban">
+                    <span class="ban-label">Target MQO Influence</span>
+                    <span class="ban-value">45</span>
+                    <span class="ban-sub neg">▼ 2% vs PM</span>
                 </div>
-                <div class="kpi-card">
-                    <div class="kpi-title">Avg Days to MQO</div>
-                    <div class="kpi-value">12.5 Days</div>
-                    <div class="kpi-delta">Global Avg: 14 Days</div>
+                <div class="worksheet-ban">
+                    <span class="ban-label">Avg Days to MQO</span>
+                    <span class="ban-value">12.5</span>
+                    <span class="ban-sub" style="color:#666;">Global Avg: 14.0</span>
                 </div>
             </div>
 
-            <div class="chart-grid">
-                <div class="chart-box">
-                    <h3>MQO Influence Over Time (By Source)</h3>
-                    <div class="wireframe-x">[ Multi-Line Chart ]<br>X: Date | Y: Count | Color: Source</div>
-                </div>
-                <div class="chart-box" style="display:flex; flex-direction:column; gap:10px; border:none; padding:0; background:transparent;">
-                    <div class="chart-box" style="flex:1; min-height:0;">
-                        <h3>MQO by Sub-Region</h3>
-                        <div class="wireframe-x">[ Pie Chart ]</div>
+            <div class="chart-row">
+                <div class="worksheet-chart">
+                    <span class="sheet-title">MQO Trend Over Time (Split by Source)</span>
+                    <div class="css-line-chart" style="margin-top:40px;">
+                         <div class="line-segment" style="width:20%; top:80%; left:0; transform:rotate(-10deg);"></div>
+                        <div class="line-segment" style="width:20%; top:65%; left:20%; transform:rotate(-25deg);"></div>
+                        <div class="line-segment" style="width:20%; top:35%; left:40%; transform:rotate(5deg);"></div>
+                        <div class="line-segment" style="width:20%; top:40%; left:60%; transform:rotate(-15deg);"></div>
+                        <div class="line-segment" style="width:20%; top:20%; left:80%; transform:rotate(0deg);"></div>
                     </div>
-                    <div class="chart-box" style="flex:1; min-height:0;">
-                        <h3>Avg Days to MQO (by Campaign)</h3>
-                        <div class="wireframe-x">[ Horizontal Bar ]</div>
-                    </div>
+                    <div style="font-size:10px; color:#999; margin-top:10px; text-align:center;">Date (Month)</div>
+                </div>
+                <div class="worksheet-chart">
+                    <span class="sheet-title">MQO Share by Sub-Region</span>
+                    <div style="width:140px; height:140px; border-radius:50%; background:conic-gradient(#1F77B4 0% 60%, #FF7F0E 60% 85%, #d3d3d3 85% 100%); margin: 40px auto;"></div>
                 </div>
             </div>
             
-            <div class="chart-box" style="min-height: 200px;">
-                <h3>MQO Breakdown by Campaign</h3>
-                <div class="wireframe-x">[ Stacked Bar Chart ]</div>
+            <div class="worksheet-chart" style="margin-top:15px; height:250px;">
+                <span class="sheet-title">MQO Influence by Campaign (Drill-down)</span>
+                <div class="css-bar-chart">
+                    <div class="bar" style="height:40%;"><div style="height:50%; background:#1F77B4; width:100%;"></div></div>
+                    <div class="bar" style="height:60%;"><div style="height:30%; background:#1F77B4; width:100%;"></div></div>
+                    <div class="bar" style="height:85%;"><div style="height:60%; background:#1F77B4; width:100%;"></div></div>
+                    <div class="bar" style="height:55%;"><div style="height:40%; background:#1F77B4; width:100%;"></div></div>
+                    <div class="bar" style="height:70%;"><div style="height:20%; background:#1F77B4; width:100%;"></div></div>
+                </div>
             </div>
         </div>
 
-        <div id="leads" class="section">
-            <div class="chart-box"><h3>Lead Quality View Placeholder</h3></div>
-        </div>
-        <div id="pipeline" class="section">
-            <div class="chart-box"><h3>Pipeline Influence View Placeholder</h3></div>
-        </div>
-        <div id="progress" class="section">
-            <div class="chart-box"><h3>Pipeline Progression View Placeholder</h3></div>
+        <div id="view-traffic" class="content-zone">
+            <div class="ban-grid">
+                <div class="worksheet-ban">
+                    <span class="ban-label">Total Sessions</span>
+                    <span class="ban-value">142.5K</span>
+                    <span class="ban-sub">▲ 5%</span>
+                </div>
+                <div class="worksheet-ban">
+                    <span class="ban-label">Target Account Sessions</span>
+                    <span class="ban-value">8,900</span>
+                    <span class="ban-sub">▲ 12%</span>
+                </div>
+                <div class="worksheet-ban">
+                    <span class="ban-label">Bounce Rate</span>
+                    <span class="ban-value">42%</span>
+                    <span class="ban-sub" style="color:#666;">-1% (Good)</span>
+                </div>
+            </div>
+            <div class="worksheet-chart" style="height:500px;">
+                <span class="sheet-title">Account Traffic Share by Source & Tier</span>
+                <div style="display:flex; justify-content:center; align-items:center; height:100%; color:#ccc;">
+                    [ Stacked Bar Chart Visual Placeholder ]
+                </div>
+            </div>
         </div>
 
-    </main>
+        <div id="view-pipeline" class="content-zone">
+             <div class="ban-grid">
+                <div class="worksheet-ban">
+                    <span class="ban-label">Influenced Pipeline ($)</span>
+                    <span class="ban-value">$4.2M</span>
+                </div>
+                <div class="worksheet-ban">
+                    <span class="ban-label">Influenced Deals (#)</span>
+                    <span class="ban-value">34</span>
+                </div>
+            </div>
+            <div class="worksheet-chart" style="height:400px;">
+                <span class="sheet-title">Pipeline Creation Over Time</span>
+                <div style="display:flex; justify-content:center; align-items:center; height:100%; color:#ccc;">
+                    [ Dual Axis Chart: Bars=Amt, Line=Count ]
+                </div>
+            </div>
+        </div>
+
+        <div id="view-leads" class="content-zone"><div class="worksheet-chart">Lead Quality Placeholder</div></div>
+        <div id="view-progression" class="content-zone"><div class="worksheet-chart">Progression Placeholder</div></div>
+
+    </div>
 
     <script>
-        function switchTab(tabId) {
-            // 1. Remove active class from all buttons
-            const buttons = document.querySelectorAll('.nav-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            
-            // 2. Add active class to clicked button (simple way matches index or event)
-            event.target.classList.add('active');
+        function openView(viewId, btnElement) {
+            // 1. Hide all Content Zones
+            var contents = document.querySelectorAll('.content-zone');
+            contents.forEach(function(content) {
+                content.classList.remove('active');
+            });
 
-            // 3. Hide all sections
-            const sections = document.querySelectorAll('.section');
-            sections.forEach(sec => sec.classList.remove('active'));
+            // 2. Remove Active Class from all Nav Buttons
+            var btns = document.querySelectorAll('.nav-btn');
+            btns.forEach(function(btn) {
+                btn.classList.remove('active');
+            });
 
-            // 4. Show target section
-            document.getElementById(tabId).classList.add('active');
+            // 3. Activate selected View and Button
+            document.getElementById(viewId).classList.add('active');
+            btnElement.classList.add('active');
         }
     </script>
-
 </body>
 </html>
