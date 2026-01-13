@@ -3,259 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1400, initial-scale=1.0">
-    <title>Paid Media Dashboard - High Contrast</title>
+    <title>Paid Media Dashboard - Full Suite</title>
     <style>
-        /* --- UPDATED VARIABLES (Brighter & Bigger) --- */
+        /* --- GLOBAL VARIABLES --- */
         :root {
             /* Backgrounds */
-            --bg-app: #F0F4F8;         /* Cool light grey-blue background */
-            --bg-card: #FFFFFF;        /* Pure white for cards */
-            
-            /* Typography Scale */
-            --font-base: 14px;
-            --font-lg: 16px;
-            --font-xl: 20px;
-            --font-kpi: 42px;          /* Massive KPI numbers */
+            --bg-app: #F4F6F8;
+            --bg-card: #FFFFFF;
             
             /* Colors */
-            --brand-primary: #0052CC;  /* Bright vivid blue */
-            --brand-secondary: #36B37E;/* Vivid Green */
-            --brand-danger: #FF5630;   /* Vivid Red */
-            --text-dark: #172B4D;      /* High contrast dark navy text */
-            --text-muted: #5E6C84;     /* Medium grey */
+            --brand-blue: #0052CC;
+            --brand-green: #36B37E;
+            --brand-red: #FF5630;
+            --brand-purple: #6554C0;
+            --brand-teal: #00B8D9;
+            --text-dark: #172B4D;
+            --text-muted: #5E6C84;
             
-            /* Effects */
-            --shadow-card: 0 4px 6px rgba(9, 30, 66, 0.08); /* Soft lift */
-            --border-card: 1px solid #DFE1E6;
+            /* Dimensions */
+            --shadow-card: 0 4px 8px rgba(9, 30, 66, 0.08);
+            --radius: 8px;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-app);
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             color: var(--text-dark);
             height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            display: flex; flex-direction: column; overflow: hidden;
         }
 
-        /* --- 1. TOOLBAR (Subtle but clear) --- */
+        /* --- TOOLBAR --- */
         .tableau-toolbar {
-            background: #FFFFFF;
-            height: 44px;
-            border-bottom: 1px solid #EBECF0;
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            gap: 25px;
-            font-size: 13px;
-            color: var(--text-muted);
+            background: #FFF; height: 44px; border-bottom: 1px solid #EBECF0;
+            display: flex; align-items: center; padding: 0 20px; gap: 25px;
+            font-size: 13px; color: var(--text-muted);
         }
-        .tb-icon { font-weight: 500; cursor: pointer; }
-        .tb-icon:hover { color: var(--brand-primary); }
+        .tb-icon:hover { color: var(--brand-blue); cursor: pointer; }
 
-        /* --- 2. CANVAS --- */
+        /* --- CANVAS --- */
         .dashboard-canvas {
-            flex: 1;
-            padding: 24px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            flex: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;
         }
 
-        /* --- 3. HEADER --- */
+        /* --- HEADER --- */
         .header-container {
-            background: var(--bg-card);
-            border-radius: 8px;
-            box-shadow: var(--shadow-card);
-            padding: 20px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: var(--bg-card); border-radius: var(--radius); box-shadow: var(--shadow-card);
+            padding: 20px 24px; display: flex; justify-content: space-between; align-items: center;
         }
-        .dash-title {
-            font-size: 26px; /* Bigger Title */
-            font-weight: 700;
-            margin: 0 0 5px 0;
-            color: var(--text-dark);
-        }
-        .dash-subtitle {
-            font-size: 14px;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
+        .dash-title { font-size: 26px; font-weight: 700; margin: 0; color: var(--text-dark); }
+        .dash-subtitle { font-size: 14px; color: var(--text-muted); font-weight: 500; }
 
-        /* --- 4. FILTERS ROW --- */
+        /* --- FILTERS --- */
         .filters-container {
-            background: var(--bg-card);
-            border-radius: 8px;
-            box-shadow: var(--shadow-card);
-            padding: 16px 24px;
-            display: flex;
-            align-items: flex-end; /* Align labels and inputs */
-            gap: 24px;
-            flex-wrap: wrap;
+            background: var(--bg-card); border-radius: var(--radius); box-shadow: var(--shadow-card);
+            padding: 16px 24px; display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap;
         }
-        .filter-group { display: flex; flex-direction: column; gap: 6px; }
-        .filter-label { 
-            font-size: 12px; 
-            text-transform: uppercase; 
-            color: var(--text-muted); 
-            font-weight: 700; 
-            letter-spacing: 0.5px;
-        }
+        .filter-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; display: block; }
         .tableau-select {
-            padding: 8px 12px;
-            font-size: 14px; /* Larger input text */
-            border: 2px solid #DFE1E6;
-            border-radius: 4px;
-            background: #FAFBFC;
-            min-width: 160px;
-            color: var(--text-dark);
-            cursor: pointer;
-            font-weight: 500;
+            padding: 8px 12px; border: 2px solid #DFE1E6; border-radius: 4px;
+            background: #FAFBFC; min-width: 150px; font-weight: 500; color: var(--text-dark); cursor: pointer;
         }
-        .tableau-select:hover { border-color: #B3BAC5; }
-        .tableau-select:focus { border-color: var(--brand-primary); outline: none; }
 
-        /* --- 5. NAVIGATION TABS (Bigger targets) --- */
-        .nav-container {
-            display: flex;
-            background: transparent;
-            gap: 10px;
-            margin-bottom: 5px;
-        }
+        /* --- NAVIGATION --- */
+        .nav-container { display: flex; gap: 12px; }
         .nav-btn {
-            flex: 1;
-            padding: 16px;
-            background: var(--bg-card);
-            border: 1px solid transparent;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.2s ease;
+            flex: 1; padding: 16px; background: var(--bg-card); border: none; border-radius: var(--radius);
+            font-size: 15px; font-weight: 600; color: var(--text-muted); cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s ease;
         }
-        .nav-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-card);
-            color: var(--brand-primary);
-        }
+        .nav-btn:hover { transform: translateY(-2px); color: var(--brand-blue); }
         .nav-btn.active {
-            background: var(--brand-primary);
-            color: #FFFFFF;
-            box-shadow: 0 4px 12px rgba(0, 82, 204, 0.3);
+            background: var(--brand-blue); color: #FFF; box-shadow: 0 4px 12px rgba(0, 82, 204, 0.3);
         }
 
-        /* --- 6. CONTENT ZONES --- */
+        /* --- CONTENT ZONES --- */
         .content-zone { display: none; }
-        .content-zone.active { display: block; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .content-zone.active { display: block; animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        @keyframes slideUp { 
-            from { opacity: 0; transform: translateY(10px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
-
-        /* KPI Cards Grid */
-        .ban-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-            margin-bottom: 24px;
-        }
+        /* --- KPI BANS --- */
+        .ban-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; }
         .worksheet-ban {
-            background: var(--bg-card);
-            border-radius: 8px;
-            box-shadow: var(--shadow-card);
-            padding: 24px;
-            text-align: center;
-            border-top: 4px solid transparent; /* Colored top borders via JS later or hardcoded */
-            position: relative;
-            overflow: hidden;
+            background: var(--bg-card); border-radius: var(--radius); box-shadow: var(--shadow-card);
+            padding: 24px; position: relative; overflow: hidden;
         }
-        /* Top border accents for KPIs */
-        .worksheet-ban:nth-child(1) { border-top-color: var(--brand-primary); }
-        .worksheet-ban:nth-child(2) { border-top-color: var(--brand-secondary); }
-        .worksheet-ban:nth-child(3) { border-top-color: #6554C0; }
+        .worksheet-ban::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: #ddd; }
+        /* Ban Color Accents */
+        .ban-blue::before { background: var(--brand-blue); }
+        .ban-green::before { background: var(--brand-green); }
+        .ban-teal::before { background: var(--brand-teal); }
+        .ban-purple::before { background: var(--brand-purple); }
 
-        .ban-label { 
-            font-size: 15px; 
-            font-weight: 600;
-            color: var(--text-muted); 
-            text-transform: uppercase;
-            margin-bottom: 8px;
-            display: block;
-        }
-        .ban-value { 
-            font-size: var(--font-kpi); 
-            font-weight: 800; 
-            color: var(--text-dark); 
-            display: block;
-            margin-bottom: 4px;
-        }
-        .ban-sub { 
-            font-size: 14px; 
-            font-weight: 600; 
-            padding: 4px 8px;
-            border-radius: 4px;
-            display: inline-block;
-        } 
-        .ban-sub.pos { color: #006644; background: #E3FCEF; } /* Green Badge */
-        .ban-sub.neg { color: #BF2600; background: #FFEBE6; } /* Red Badge */
+        .ban-label { font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block; }
+        .ban-value { font-size: 42px; font-weight: 800; color: var(--text-dark); display: block; margin-bottom: 4px; }
+        .ban-sub { font-size: 13px; font-weight: 600; padding: 4px 8px; border-radius: 4px; display: inline-block; }
+        .pos { color: #006644; background: #E3FCEF; }
+        .neg { color: #BF2600; background: #FFEBE6; }
 
-        /* Chart Grid */
-        .chart-row {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 24px;
-            height: 450px; /* Taller charts */
-        }
+        /* --- CHARTS --- */
+        .chart-row { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px; height: 420px; }
+        .chart-full { height: 350px; margin-bottom: 24px; }
         .worksheet-chart {
-            background: var(--bg-card);
-            border-radius: 8px;
-            box-shadow: var(--shadow-card);
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
+            background: var(--bg-card); border-radius: var(--radius); box-shadow: var(--shadow-card);
+            padding: 24px; display: flex; flex-direction: column;
         }
-        .sheet-title {
-            font-size: 18px; /* Bigger Headers */
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #F4F5F7;
-        }
-
-        /* --- VISUALIZATIONS (CSS Art) --- */
-        .chart-container { flex: 1; position: relative; }
+        .sheet-title { font-size: 18px; font-weight: 700; color: var(--text-dark); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #F4F5F7; }
         
-        /* Line Chart Logic */
-        .css-line-chart { width: 100%; height: 100%; border-left: 2px solid #EBECF0; border-bottom: 2px solid #EBECF0; position: relative; }
-        .line-segment { position: absolute; height: 3px; background: var(--brand-primary); border-radius: 2px; }
+        /* CSS Chart Art Helpers */
+        .chart-container { flex: 1; position: relative; display: flex; align-items: flex-end; justify-content: space-around; padding-bottom: 20px; }
         
-        /* Bar Chart Logic */
-        .css-bar-chart { display: flex; align-items: flex-end; gap: 15px; height: 100%; padding-bottom: 10px; }
-        .bar-col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; }
-        .bar-seg { width: 100%; background: var(--brand-primary); margin-bottom: 2px; transition: opacity 0.2s; }
+        /* Vertical Bars */
+        .bar-group { width: 10%; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; position: relative; }
+        .bar-seg { width: 100%; transition: opacity 0.2s; }
         .bar-seg:hover { opacity: 0.8; }
         
+        /* Horizontal Bars */
+        .h-chart-row { display: flex; align-items: center; margin-bottom: 12px; }
+        .h-label { width: 120px; font-size: 13px; color: var(--text-muted); font-weight: 600; text-align: right; padding-right: 15px; }
+        .h-bar-bg { flex: 1; background: #EBECF0; height: 24px; border-radius: 4px; overflow: hidden; }
+        .h-bar-fill { height: 100%; background: var(--brand-blue); }
+
+        /* Table */
+        .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .data-table th { text-align: left; color: var(--text-muted); border-bottom: 2px solid #EBECF0; padding: 10px; font-size: 12px; }
+        .data-table td { border-bottom: 1px solid #EBECF0; padding: 12px 10px; font-weight: 500; }
+        .data-table tr:hover { background: #FAFBFC; }
+
     </style>
 </head>
 <body>
 
     <div class="tableau-toolbar">
         <span style="font-weight:800; font-size:16px; color:#172B4D;">Tableau</span>
-        <span class="tb-icon">↩ Undo</span>
-        <span class="tb-icon">↪ Redo</span>
-        <span class="tb-icon">⤓ Download</span>
+        <span>↩ Undo</span> <span>↪ Redo</span> <span>⤓ Download</span>
         <span style="flex:1;"></span>
-        <button style="background:var(--brand-primary); color:white; border:none; padding:8px 16px; border-radius:4px; cursor:pointer; font-weight:600;">Share</button>
+        <button style="background:var(--brand-blue); color:white; border:none; padding:8px 16px; border-radius:4px; font-weight:600; cursor:pointer;">Share</button>
     </div>
 
     <div class="dashboard-canvas">
@@ -263,134 +147,275 @@
         <div class="header-container">
             <div>
                 <h1 class="dash-title">Paid Media Performance Dashboard</h1>
-                <span class="dash-subtitle">Unified View: Salesforce, Lytics & Google Analytics 4</span>
+                <span class="dash-subtitle">Unified View: Snowflake Data Cloud</span>
             </div>
             <div style="text-align:right;">
                 <div style="font-size:12px; font-weight:700; color:var(--text-muted);">LAST REFRESH</div>
-                <div style="font-size:14px; font-weight:600; color:var(--brand-secondary);">● Live: Just now</div>
+                <div style="font-size:14px; font-weight:600; color:var(--brand-green);">● Live: Just now</div>
             </div>
         </div>
 
         <div class="filters-container">
-            <div class="filter-group">
-                <span class="filter-label">Time Period</span>
-                <select class="tableau-select"><option>This Quarter (Q1)</option><option>Last Month</option><option>Year to Date</option></select>
-            </div>
-            <div class="filter-group">
-                <span class="filter-label">Source Channel</span>
-                <select class="tableau-select"><option>All Sources</option><option>LinkedIn Ads</option><option>Google Search</option></select>
-            </div>
-            <div class="filter-group">
-                <span class="filter-label">Campaign Type</span>
-                <select class="tableau-select"><option>All Campaigns</option><option>Demand Gen</option><option>Brand Awareness</option></select>
-            </div>
-            <div class="filter-group">
-                <span class="filter-label">Account Tier</span>
-                <select class="tableau-select"><option>Strategic & Target</option><option>Enterprise</option><option>Mid-Market</option></select>
-            </div>
-            <div style="flex:1; text-align:right;">
-                <a href="#" style="font-size:13px; color:var(--brand-primary); text-decoration:none; font-weight:600;">Reset All Filters</a>
-            </div>
+            <div><span class="filter-label">Time Period</span><select class="tableau-select"><option>This Quarter (Q1)</option><option>Last Month</option></select></div>
+            <div><span class="filter-label">Unified Source</span><select class="tableau-select"><option>All Sources</option><option>LinkedIn</option><option>Google</option></select></div>
+            <div><span class="filter-label">Campaign</span><select class="tableau-select"><option>All Campaigns</option><option>Demand Gen</option></select></div>
+            <div><span class="filter-label">Account Tier</span><select class="tableau-select"><option>All Tiers</option><option>Strategic</option></select></div>
+            <div style="flex:1; text-align:right;"><a href="#" style="font-size:13px; color:var(--brand-blue); text-decoration:none; font-weight:600;">Reset</a></div>
         </div>
 
         <nav class="nav-container">
-            <button class="nav-btn" onclick="openView('view-traffic', this)">Account Traffic</button>
-            <button class="nav-btn" onclick="openView('view-leads', this)">Lead Quality</button>
-            <button class="nav-btn active" onclick="openView('view-mqo', this)">MQO Analysis</button>
-            <button class="nav-btn" onclick="openView('view-pipeline', this)">Pipeline Inf.</button>
-            <button class="nav-btn" onclick="openView('view-progression', this)">Progression</button>
+            <button class="nav-btn active" onclick="switchTab('view-traffic', this)">1. Account Traffic</button>
+            <button class="nav-btn" onclick="switchTab('view-leads', this)">2. Lead Quality</button>
+            <button class="nav-btn" onclick="switchTab('view-mqo', this)">3. MQO Analysis</button>
+            <button class="nav-btn" onclick="switchTab('view-pipeline', this)">4. Pipeline Inf.</button>
+            <button class="nav-btn" onclick="switchTab('view-progression', this)">5. Progression</button>
         </nav>
 
-        <div id="view-mqo" class="content-zone active">
-            
+        <div id="view-traffic" class="content-zone active">
             <div class="ban-grid">
-                <div class="worksheet-ban">
-                    <span class="ban-label">Total MQO Influence</span>
-                    <span class="ban-value">158</span>
-                    <span class="ban-sub pos">▲ 12.4% vs Last Month</span>
+                <div class="worksheet-ban ban-blue">
+                    <span class="ban-label">Total Web Sessions</span>
+                    <span class="ban-value">142.5K</span>
+                    <span class="ban-sub pos">▲ 5.2% vs Prev</span>
                 </div>
-                <div class="worksheet-ban">
-                    <span class="ban-label">Target Account MQOs</span>
-                    <span class="ban-value">45</span>
-                    <span class="ban-sub neg">▼ 2.1% vs Last Month</span>
+                <div class="worksheet-ban ban-purple">
+                    <span class="ban-label">Target Account Traffic</span>
+                    <span class="ban-value">8,900</span>
+                    <span class="ban-sub pos">▲ 12.0% vs Prev</span>
                 </div>
-                <div class="worksheet-ban">
-                    <span class="ban-label">Avg Days to Convert</span>
-                    <span class="ban-value">12.5</span>
-                    <span class="ban-sub" style="background:#EBECF0; color:#42526E;">Goal: < 14 Days</span>
+                <div class="worksheet-ban ban-teal">
+                    <span class="ban-label">Bounce Rate (Avg)</span>
+                    <span class="ban-value">42.5%</span>
+                    <span class="ban-sub pos">-0.5% (Improved)</span>
                 </div>
             </div>
 
             <div class="chart-row">
                 <div class="worksheet-chart">
-                    <span class="sheet-title">MQO Influence Trend (Over Time)</span>
+                    <span class="sheet-title">Traffic Share by Source & Tier</span>
                     <div class="chart-container">
-                        <div class="css-line-chart">
-                             <div class="line-segment" style="width:20%; top:80%; left:0; transform:rotate(-15deg);"></div>
-                            <div class="line-segment" style="width:20%; top:60%; left:20%; transform:rotate(-20deg);"></div>
-                            <div class="line-segment" style="width:20%; top:35%; left:40%; transform:rotate(5deg);"></div>
-                            <div class="line-segment" style="width:20%; top:45%; left:60%; transform:rotate(-10deg);"></div>
-                            <div class="line-segment" style="width:20%; top:20%; left:80%; transform:rotate(0deg);"></div>
-                            <div style="position:absolute; width:100%; top:25%; border-top:1px dashed #eee;"></div>
-                            <div style="position:absolute; width:100%; top:50%; border-top:1px dashed #eee;"></div>
-                            <div style="position:absolute; width:100%; top:75%; border-top:1px dashed #eee;"></div>
+                        <div class="bar-group"><div class="bar-seg" style="height:40%; background:#0052CC;"></div><div class="bar-seg" style="height:30%; background:#6554C0;"></div><div style="font-size:10px; margin-top:5px;">Google</div></div>
+                        <div class="bar-group"><div class="bar-seg" style="height:20%; background:#0052CC;"></div><div class="bar-seg" style="height:60%; background:#6554C0;"></div><div style="font-size:10px; margin-top:5px;">LinkedIn</div></div>
+                        <div class="bar-group"><div class="bar-seg" style="height:30%; background:#0052CC;"></div><div class="bar-seg" style="height:10%; background:#6554C0;"></div><div style="font-size:10px; margin-top:5px;">Meta</div></div>
+                        <div class="bar-group"><div class="bar-seg" style="height:10%; background:#0052CC;"></div><div class="bar-seg" style="height:5%; background:#6554C0;"></div><div style="font-size:10px; margin-top:5px;">Bing</div></div>
+                        <div class="bar-group"><div class="bar-seg" style="height:50%; background:#0052CC;"></div><div class="bar-seg" style="height:10%; background:#6554C0;"></div><div style="font-size:10px; margin-top:5px;">Direct</div></div>
+                    </div>
+                </div>
+                <div class="worksheet-chart">
+                    <span class="sheet-title">Top 5 Accounts by Views</span>
+                    <table class="data-table">
+                        <thead><tr><th>Account Name</th><th>Tier</th><th>Views</th></tr></thead>
+                        <tbody>
+                            <tr><td>Acme Corp</td><td>Strategic</td><td>1,204</td></tr>
+                            <tr><td>Globex Inc</td><td>Strategic</td><td>985</td></tr>
+                            <tr><td>Soylent Corp</td><td>Target</td><td>850</td></tr>
+                            <tr><td>Initech</td><td>Target</td><td>720</td></tr>
+                            <tr><td>Massive Dynamic</td><td>Strategic</td><td>650</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-leads" class="content-zone">
+            <div class="ban-grid">
+                <div class="worksheet-ban ban-green">
+                    <span class="ban-label">Total Touches</span>
+                    <span class="ban-value">24,500</span>
+                    <span class="ban-sub pos">▲ 8% MoM</span>
+                </div>
+                <div class="worksheet-ban ban-green">
+                    <span class="ban-label">Net New Leads</span>
+                    <span class="ban-value">3,204</span>
+                    <span class="ban-sub neg">▼ 1.2% MoM</span>
+                </div>
+                <div class="worksheet-ban ban-purple">
+                    <span class="ban-label">Target Account Touches</span>
+                    <span class="ban-value">1,150</span>
+                    <span class="ban-sub pos">▲ 15% MoM</span>
+                </div>
+            </div>
+
+            <div class="chart-row">
+                <div class="worksheet-chart">
+                    <span class="sheet-title">Touches by Job Function</span>
+                    <div style="margin-top:20px;">
+                        <div class="h-chart-row">
+                            <span class="h-label">Executive</span>
+                            <div class="h-bar-bg"><div class="h-bar-fill" style="width: 25%; background:#6554C0;"></div></div>
+                        </div>
+                        <div class="h-chart-row">
+                            <span class="h-label">Director</span>
+                            <div class="h-bar-bg"><div class="h-bar-fill" style="width: 45%; background:#0052CC;"></div></div>
+                        </div>
+                        <div class="h-chart-row">
+                            <span class="h-label">Manager</span>
+                            <div class="h-bar-bg"><div class="h-bar-fill" style="width: 60%; background:#00B8D9;"></div></div>
+                        </div>
+                        <div class="h-chart-row">
+                            <span class="h-label">Individual</span>
+                            <div class="h-bar-bg"><div class="h-bar-fill" style="width: 80%; background:#36B37E;"></div></div>
                         </div>
                     </div>
                 </div>
                 <div class="worksheet-chart">
-                    <span class="sheet-title">Share by Region</span>
-                    <div class="chart-container" style="display:flex; justify-content:center; align-items:center;">
-                        <div style="width:180px; height:180px; border-radius:50%; background:conic-gradient(#0052CC 0% 65%, #36B37E 65% 85%, #FF5630 85% 100%); position:relative;">
-                            <div style="position:absolute; width:100px; height:100px; background:white; border-radius:50%; top:40px; left:40px; display:flex; align-items:center; justify-content:center;">
-                                <span style="font-weight:700; color:#172B4D; font-size:24px;">65%</span>
-                            </div>
+                    <span class="sheet-title">Acquisition Channel Split</span>
+                    <div style="display:flex; justify-content:center; align-items:center; height:100%;">
+                        <div style="width:160px; height:160px; border-radius:50%; background:conic-gradient(#0052CC 0% 40%, #36B37E 40% 70%, #FF5630 70% 100%); position:relative;">
+                            <div style="position:absolute; width:90px; height:90px; background:white; border-radius:50%; top:35px; left:35px;"></div>
                         </div>
                     </div>
                     <div style="text-align:center; font-size:12px; color:#5E6C84; margin-top:10px;">
-                        <span style="color:#0052CC">● North America</span> &nbsp; 
-                        <span style="color:#36B37E">● EMEA</span>
+                        <span style="color:#0052CC">● Paid Social</span> &nbsp; <span style="color:#36B37E">● Search</span> &nbsp; <span style="color:#FF5630">● Display</span>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="worksheet-chart" style="margin-top:24px; height:300px;">
-                <span class="sheet-title">Campaign Performance Detail</span>
-                <div class="chart-container">
-                    <div class="css-bar-chart">
-                        <div class="bar-col"><div class="bar-seg" style="height:40%; background:#0052CC;"></div><div class="bar-seg" style="height:20%; background:#6554C0;"></div></div>
-                        <div class="bar-col"><div class="bar-seg" style="height:60%; background:#0052CC;"></div><div class="bar-seg" style="height:10%; background:#6554C0;"></div></div>
-                        <div class="bar-col"><div class="bar-seg" style="height:30%; background:#0052CC;"></div><div class="bar-seg" style="height:30%; background:#6554C0;"></div></div>
-                        <div class="bar-col"><div class="bar-seg" style="height:80%; background:#0052CC;"></div><div class="bar-seg" style="height:15%; background:#6554C0;"></div></div>
-                        <div class="bar-col"><div class="bar-seg" style="height:50%; background:#0052CC;"></div><div class="bar-seg" style="height:25%; background:#6554C0;"></div></div>
+        <div id="view-mqo" class="content-zone">
+            <div class="ban-grid">
+                <div class="worksheet-ban ban-blue">
+                    <span class="ban-label">Total MQO Influence</span>
+                    <span class="ban-value">158</span>
+                    <span class="ban-sub pos">▲ 12.4% MoM</span>
+                </div>
+                <div class="worksheet-ban ban-purple">
+                    <span class="ban-label">Target Account MQOs</span>
+                    <span class="ban-value">45</span>
+                    <span class="ban-sub neg">▼ 2.1% MoM</span>
+                </div>
+                <div class="worksheet-ban ban-teal">
+                    <span class="ban-label">Avg Days to MQO</span>
+                    <span class="ban-value">12.5</span>
+                    <span class="ban-sub" style="background:#EBECF0; color:#42526E;">Goal: < 14 Days</span>
+                </div>
+            </div>
+
+            <div class="worksheet-chart chart-full">
+                <span class="sheet-title">MQO Influence Trend Over Time (By Source)</span>
+                <div class="chart-container" style="align-items: flex-end; gap: 3px;">
+                    <div class="bar-group" style="width:5%;"><div class="bar-seg" style="height:20%; background:#0052CC;"></div></div>
+                     <div class="bar-group" style="width:5%;"><div class="bar-seg" style="height:25%; background:#0052CC;"></div></div>
+                     <div class="bar-group" style="width:5%;"><div class="bar-seg" style="height:40%; background:#0052CC;"></div></div>
+                     <div class="bar-group" style="width:5%;"><div class="bar-seg" style="height:35%; background:#0052CC;"></div></div>
+                     <div class="bar-group" style="width:5%;"><div class="bar-seg" style="height:50%; background:#0052CC;"></div></div>
+                     <div class="bar-group" style="width:5%;"><div class="bar-seg" style="height:65%; background:#0052CC;"></div></div>
+                     <div class="bar-group" style="width:5%;"><div class="bar-seg" style="height:60%; background:#0052CC;"></div></div>
+                     <div class="bar-group" style="width:5%;"><div class="bar-seg" style="height:80%; background:#0052CC;"></div></div>
+                     <div class="bar-group" style="width:5%;"><div class="bar-seg" style="height:75%; background:#0052CC;"></div></div>
+                     <div class="bar-group" style="width:5%;"><div class="bar-seg" style="height:90%; background:#0052CC;"></div></div>
+                </div>
+                <div style="text-align:center; font-size:11px; color:#5E6C84; border-top:1px solid #eee; padding-top:5px;">Last 10 Weeks</div>
+            </div>
+        </div>
+
+        <div id="view-pipeline" class="content-zone">
+            <div class="ban-grid">
+                <div class="worksheet-ban ban-green">
+                    <span class="ban-label">Influenced Pipeline ($)</span>
+                    <span class="ban-value">$4.2M</span>
+                    <span class="ban-sub pos">▲ $500k vs Last Q</span>
+                </div>
+                <div class="worksheet-ban ban-green">
+                    <span class="ban-label">Influenced Opps (#)</span>
+                    <span class="ban-value">34</span>
+                    <span class="ban-sub pos">▲ 2 vs Last Q</span>
+                </div>
+                <div class="worksheet-ban ban-teal">
+                    <span class="ban-label">Avg Deal Size</span>
+                    <span class="ban-value">$124k</span>
+                    <span class="ban-sub">Enterprise Segment</span>
+                </div>
+            </div>
+
+            <div class="chart-row">
+                <div class="worksheet-chart">
+                    <span class="sheet-title">Pipeline Creation by Source</span>
+                    <div class="chart-container">
+                         <div class="bar-group"><div class="bar-seg" style="height:60%; background:#36B37E;"></div><div class="bar-seg" style="height:20%; background:#0052CC;"></div><div style="font-size:10px; margin-top:5px;">LinkedIn</div></div>
+                        <div class="bar-group"><div class="bar-seg" style="height:30%; background:#36B37E;"></div><div class="bar-seg" style="height:50%; background:#0052CC;"></div><div style="font-size:10px; margin-top:5px;">Google</div></div>
+                        <div class="bar-group"><div class="bar-seg" style="height:20%; background:#36B37E;"></div><div class="bar-seg" style="height:10%; background:#0052CC;"></div><div style="font-size:10px; margin-top:5px;">Meta</div></div>
+                        <div class="bar-group"><div class="bar-seg" style="height:40%; background:#36B37E;"></div><div class="bar-seg" style="height:5%; background:#0052CC;"></div><div style="font-size:10px; margin-top:5px;">G2</div></div>
                     </div>
                 </div>
-             </div>
+                <div class="worksheet-chart">
+                    <span class="sheet-title">Pipeline by Ad Group</span>
+                    <div style="margin-top:10px;">
+                        <div class="h-chart-row">
+                            <span class="h-label" style="width:80px;">Retargeting</span>
+                            <div class="h-bar-bg"><div class="h-bar-fill" style="width: 90%; background:#36B37E;"></div></div>
+                            <span style="font-size:11px; margin-left:5px;">$1.2M</span>
+                        </div>
+                        <div class="h-chart-row">
+                            <span class="h-label" style="width:80px;">Competitor</span>
+                            <div class="h-bar-bg"><div class="h-bar-fill" style="width: 60%; background:#36B37E;"></div></div>
+                            <span style="font-size:11px; margin-left:5px;">$800k</span>
+                        </div>
+                        <div class="h-chart-row">
+                            <span class="h-label" style="width:80px;">Brand</span>
+                            <div class="h-bar-bg"><div class="h-bar-fill" style="width: 40%; background:#36B37E;"></div></div>
+                             <span style="font-size:11px; margin-left:5px;">$500k</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div id="view-traffic" class="content-zone">
-            <div class="worksheet-ban"><span class="ban-value">Account Traffic View</span></div>
-        </div>
-        <div id="view-leads" class="content-zone">
-            <div class="worksheet-ban"><span class="ban-value">Lead Quality View</span></div>
-        </div>
-        <div id="view-pipeline" class="content-zone">
-            <div class="worksheet-ban"><span class="ban-value">Pipeline View</span></div>
-        </div>
-         <div id="view-progression" class="content-zone">
-            <div class="worksheet-ban"><span class="ban-value">Progression View</span></div>
+        <div id="view-progression" class="content-zone">
+            <div class="ban-grid">
+                <div class="worksheet-ban ban-green">
+                    <span class="ban-label">Total Bookings ($)</span>
+                    <span class="ban-value">$1.8M</span>
+                    <span class="ban-sub pos">▲ 105% vs Target</span>
+                </div>
+                <div class="worksheet-ban ban-green">
+                    <span class="ban-label">Deals Won (#)</span>
+                    <span class="ban-value">12</span>
+                    <span class="ban-sub">Q1 Actuals</span>
+                </div>
+                <div class="worksheet-ban ban-purple">
+                    <span class="ban-label">Win Rate</span>
+                    <span class="ban-value">22%</span>
+                    <span class="ban-sub pos">▲ 2% vs Avg</span>
+                </div>
+            </div>
+
+            <div class="chart-full worksheet-chart">
+                <span class="sheet-title">Won Opportunities Details</span>
+                <div style="overflow-y:auto; height:100%;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Opp Name</th>
+                                <th>Account</th>
+                                <th>Primary Campaign</th>
+                                <th>Close Date</th>
+                                <th style="text-align:right;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Acme Global Expansion</td><td>Acme Corp</td><td>Q1_LinkedIn_Demand</td><td>Jan 15</td><td style="text-align:right; font-weight:700;">$450,000</td></tr>
+                            <tr><td>Stark Ind Renewal</td><td>Stark Ind</td><td>Q1_Google_Brand</td><td>Jan 22</td><td style="text-align:right; font-weight:700;">$210,000</td></tr>
+                            <tr><td>Wayne Ent Pilot</td><td>Wayne Ent</td><td>Q1_Meta_Retargeting</td><td>Feb 01</td><td style="text-align:right; font-weight:700;">$125,000</td></tr>
+                            <tr><td>Cyberdyne Systems</td><td>Cyberdyne</td><td>Q1_LinkedIn_ABM</td><td>Feb 10</td><td style="text-align:right; font-weight:700;">$98,000</td></tr>
+                            <tr><td>Umbrella Corp</td><td>Umbrella</td><td>Q1_G2_Intent</td><td>Feb 12</td><td style="text-align:right; font-weight:700;">$85,000</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
     </div>
 
     <script>
-        function openView(viewId, btnElement) {
-            // Reset contents
+        function switchTab(viewId, btn) {
+            // Hide all content
             document.querySelectorAll('.content-zone').forEach(el => el.classList.remove('active'));
-            // Reset buttons
+            // Deselect all buttons
             document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-            // Activate new
+            // Activate selected
             document.getElementById(viewId).classList.add('active');
-            btnElement.classList.add('active');
+            btn.classList.add('active');
         }
     </script>
 </body>
