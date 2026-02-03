@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Model ERD - Interactive</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 100%;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1976D2;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+        
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            border: 2px solid;
+        }
+        
+        .source { background: #E8F5E9; border-color: #4CAF50; }
+        .dimension { background: #E1BEE7; border-color: #9C27B0; }
+        .fact { background: #FFE0B2; border-color: #FF6F00; }
+        .summary { background: #FFCCBC; border-color: #FF5722; }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            padding: 8px 16px;
+            border: 2px solid #1976D2;
+            background: white;
+            color: #1976D2;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover {
+            background: #1976D2;
+            color: white;
+        }
+        
+        .control-btn.active {
+            background: #1976D2;
+            color: white;
+        }
+        
+        .diagram-canvas {
+            position: relative;
+            width: 100%;
+            min-height: 2800px;
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            overflow: visible;
+        }
+        
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .layer {
+            position: relative;
+            z-index: 2;
+            padding: 20px;
+        }
+        
+        .layer-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding: 12px;
+            border-radius: 5px;
+            color: white;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .layer-title.source { background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); }
+        .layer-title.dimension { background: linear-gradient(135deg, #9C27B0 0%, #6A1B9A 100%); }
+        .layer-title.fact { background: linear-gradient(135deg, #FF6F00 0%, #E65100 100%); }
+        .layer-title.summary { background: linear-gradient(135deg, #FF5722 0%, #D84315 100%); }
+        
+        .tables-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            align-items: flex-start;
+        }
+        
+        .table {
+            border: 2px solid;
+            border-radius: 6px;
+            background: white;
+            min-width: 280px;
+            max-width: 280px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .table:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .table.highlighted {
+            box-shadow: 0 0 0 3px #FFD700;
+            transform: translateY(-5px);
+        }
+        
+        .table.source { border-color: #4CAF50; }
+        .table.dimension { border-color: #9C27B0; }
+        .table.fact { border-color: #FF6F00; }
+        .table.summary { border-color: #FF5722; }
+        
+        .table-header {
+            padding: 12px;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            border-radius: 4px 4px 0 0;
+            font-size: 13px;
+        }
+        
+        .table-header.source { background: #4CAF50; }
+        .table-header.dimension { background: #9C27B0; }
+        .table-header.fact { background: #FF6F00; }
+        .table-header.summary { background: #FF5722; }
+        
+        .table-body {
+            padding: 12px;
+        }
+        
+        .field {
+            font-size: 11px;
+            padding: 3px 0;
+            color: #333;
+        }
+        
+        .field.pk {
+            color: #D4AF37;
+            font-weight: bold;
+        }
+        
+        .field.fk {
+            color: #1976D2;
+        }
+        
+        .field.fk:hover {
+            background: #E3F2FD;
+            cursor: pointer;
+        }
+        
+        .divider {
+            border-top: 1px solid #e0e0e0;
+            margin: 8px 0;
+        }
+        
+        .description {
+            font-size: 10px;
+            color: #666;
+            font-style: italic;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .connection {
+            fill: none;
+            stroke: #999;
+            stroke-width: 2;
+            opacity: 0.3;
+            transition: all 0.3s;
+        }
+        
+        .connection.active {
+            stroke: #1976D2;
+            stroke-width: 3;
+            opacity: 1;
+            filter: drop-shadow(0 0 4px #1976D2);
+        }
+        
+        .connection.dim-to-fact {
+            stroke: #9C27B0;
+        }
+        
+        .connection.fact-to-summary {
+            stroke: #FF6F00;
+        }
+        
+        .connection.source-to-dim {
+            stroke: #4CAF50;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+            white-space: nowrap;
+        }
+        
+        .tooltip.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Data Model - Complete ERD</h1>
+        <p class="subtitle">Interactive Entity Relationship Diagram with All Layers</p>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-box source"></div>
+                <span>Source Tables</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box dimension"></div>
+                <span>Dimension Tables</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box fact"></div>
+                <span>Fact Tables</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box summary"></div>
+                <span>Summary/Aggregate Tables</span>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="control-btn active" onclick="showAllConnections()">Show All</button>
+            <button class="control-btn" onclick="showConnectionType('source-to-dim')">Source → Dim</button>
+            <button class="control-btn" onclick="showConnectionType('dim-to-fact')">Dim → Fact</button>
+            <button class="control-btn" onclick="showConnectionType('fact-to-summary')">Fact → Summary</button>
+            <button class="control-btn" onclick="hideAllConnections()">Hide All</button>
+        </div>
+        
+        <div class="diagram-canvas" id="canvas">
+            <svg id="svg-connections"></svg>
+            
+            <!-- SOURCE LAYER -->
+            <div class="layer">
+                <div class="layer-title source">Source Tables / External Systems</div>
+                <div class="tables-row">
+                    <div class="table source" id="CONTACT" data-layer="source">
+                        <div class="table-header source">CONTACT</div>
+                        <div class="table-body">
+                            <div class="field pk">contact_id (PK)</div>
+                            <div class="field">first_name</div>
+                            <div class="field">last_name</div>
+                            <div class="field">email</div>
+                            <div class="field">phone</div>
+                            <div class="field">status</div>
+                            <div class="description">Contact master data</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="LEAD" data-layer="source">
+                        <div class="table-header source">LEAD</div>
+                        <div class="table-body">
+                            <div class="field pk">lead_id (PK)</div>
+                            <div class="field">first_name</div>
+                            <div class="field">last_name</div>
+                            <div class="field">company</div>
+                            <div class="field">email</div>
+                            <div class="field">status</div>
+                            <div class="field">source</div>
+                            <div class="description">Lead records</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="ACCOUNT" data-layer="source">
+                        <div class="table-header source">ACCOUNT</div>
+                        <div class="table-body">
+                            <div class="field pk">account_id (PK)</div>
+                            <div class="field">account_name</div>
+                            <div class="field">account_type</div>
+                            <div class="field">industry</div>
+                            <div class="field">annual_revenue</div>
+                            <div class="field">employee_count</div>
+                            <div class="description">Account/customer data</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="OPPORTUNITY" data-layer="source">
+                        <div class="table-header source">OPPORTUNITY</div>
+                        <div class="table-body">
+                            <div class="field pk">opportunity_id (PK)</div>
+                            <div class="field">opportunity_name</div>
+                            <div class="field">amount</div>
+                            <div class="field">stage</div>
+                            <div class="field">close_date</div>
+                            <div class="field">probability</div>
+                            <div class="field fk">account_id (FK)</div>
+                            <div class="description">Sales opportunities</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="CASE" data-layer="source">
+                        <div class="table-header source">CASE</div>
+                        <div class="table-body">
+                            <div class="field pk">case_id (PK)</div>
+                            <div class="field">case_number</div>
+                            <div class="field">subject</div>
+                            <div class="field">status</div>
+                            <div class="field">priority</div>
+                            <div class="field fk">account_id (FK)</div>
+                            <div class="field fk">contact_id (FK)</div>
+                            <div class="description">Support cases</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="CUSTOMER_EXPERIENCE" data-layer="source">
+                        <div class="table-header source">CUSTOMER_EXPERIENCE</div>
+                        <div class="table-body">
+                            <div class="field pk">experience_id (PK)</div>
+                            <div class="field fk">customer_id (FK)</div>
+                            <div class="field">experience_type</div>
+                            <div class="field">experience_date</div>
+                            <div class="field">rating</div>
+                            <div class="field">feedback</div>
+                            <div class="description">Customer experience events</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="CUSTOMER_COMMITMENT_TRACKING" data-layer="source">
+                        <div class="table-header source">CUSTOMER_COMMITMENT_TRACKING</div>
+                        <div class="table-body">
+                            <div class="field pk">commitment_id (PK)</div>
+                            <div class="field fk">customer_id (FK)</div>
+                            <div class="field">commitment_type</div>
+                            <div class="field">commitment_date</div>
+                            <div class="field">status</div>
+                            <div class="field">value</div>
+                            <div class="description">Customer commitments</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="STOCKPRICE" data-layer="source">
+                        <div class="table-header source">STOCKPRICE</div>
+                        <div class="table-body">
+                            <div class="field pk">stock_id (PK)</div>
+                            <div class="field">ticker_symbol</div>
+                            <div class="field">price_date</div>
+                            <div class="field">open_price</div>
+                            <div class="field">close_price</div>
+                            <div class="field">volume</div>
+                            <div class="description">Stock price data</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="FEEDBACK_SURVEY" data-layer="source">
+                        <div class="table-header source">FEEDBACK_SURVEY</div>
+                        <div class="table-body">
+                            <div class="field pk">survey_id (PK)</div>
+                            <div class="field fk">customer_id (FK)</div>
+                            <div class="field">survey_date</div>
+                            <div class="field">nps_score</div>
+                            <div class="field">satisfaction_score</div>
+                            <div class="field">comments</div>
+                            <div class="description">Customer feedback surveys</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="CONTENT_STACK_GSSCI" data-layer="source">
+                        <div class="table-header source">CONTENT_STACK_GSSCI</div>
+                        <div class="table-body">
+                            <div class="field pk">content_id (PK)</div>
+                            <div class="field">content_type</div>
+                            <div class="field">created_date</div>
+                            <div class="field">published_date</div>
+                            <div class="field">status</div>
+                            <div class="description">Content management data</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="USERS_GSSCI" data-layer="source">
+                        <div class="table-header source">USERS_GSSCI</div>
+                        <div class="table-body">
+                            <div class="field pk">user_id (PK)</div>
+                            <div class="field">username</div>
+                            <div class="field">email</div>
+                            <div class="field">role</div>
+                            <div class="field">created_date</div>
+                            <div class="field">is_active</div>
+                            <div class="description">User data from GSSCI</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="CONTRACT" data-layer="source">
+                        <div class="table-header source">CONTRACT</div>
+                        <div class="table-body">
+                            <div class="field pk">contract_id (PK)</div>
+                            <div class="field fk">account_id (FK)</div>
+                            <div class="field">contract_number</div>
+                            <div class="field">start_date</div>
+                            <div class="field">end_date</div>
+                            <div class="field">contract_value</div>
+                            <div class="field">status</div>
+                            <div class="description">Contract records</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="UNITED_CONVERSION_RATE" data-layer="source">
+                        <div class="table-header source">UNITED_CONVERSION_RATE</div>
+                        <div class="table-body">
+                            <div class="field pk">rate_id (PK)</div>
+                            <div class="field">from_currency</div>
+                            <div class="field">to_currency</div>
+                            <div class="field">conversion_rate</div>
+                            <div class="field">effective_date</div>
+                            <div class="description">Currency conversion rates</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="HEAP" data-layer="source">
+                        <div class="table-header source">HEAP</div>
+                        <div class="table-body">
+                            <div class="field pk">event_id (PK)</div>
+                            <div class="field">user_id</div>
+                            <div class="field">event_type</div>
+                            <div class="field">event_timestamp</div>
+                            <div class="field">properties</div>
+                            <div class="description">Analytics event data</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="LEARNUPON_ENROLLMENTS" data-layer="source">
+                        <div class="table-header source">LEARNUPON_ENROLLMENTS</div>
+                        <div class="table-body">
+                            <div class="field pk">enrollment_id (PK)</div>
+                            <div class="field fk">user_id (FK)</div>
+                            <div class="field">course_id</div>
+                            <div class="field">enrollment_date</div>
+                            <div class="field">completion_date</div>
+                            <div class="field">status</div>
+                            <div class="description">Learning platform enrollments</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="LEARNUPON_USERS" data-layer="source">
+                        <div class="table-header source">LEARNUPON_USERS</div>
+                        <div class="table-body">
+                            <div class="field pk">user_id (PK)</div>
+                            <div class="field">username</div>
+                            <div class="field">email</div>
+                            <div class="field">registration_date</div>
+                            <div class="field">last_login</div>
+                            <div class="description">Learning platform users</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="LEARNUPON_USERS_PARTNER" data-layer="source">
+                        <div class="table-header source">LEARNUPON_USERS_PARTNER</div>
+                        <div class="table-body">
+                            <div class="field pk">partner_user_id (PK)</div>
+                            <div class="field fk">user_id (FK)</div>
+                            <div class="field fk">partner_id (FK)</div>
+                            <div class="field">relationship_type</div>
+                            <div class="field">start_date</div>
+                            <div class="description">Partner user relationships</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="LEARNUPON_ENROLLMENTS_PARTNER" data-layer="source">
+                        <div class="table-header source">LEARNUPON_ENROLLMENTS_PARTNER</div>
+                        <div class="table-body">
+                            <div class="field pk">partner_enrollment_id (PK)</div>
+                            <div class="field fk">enrollment_id (FK)</div>
+                            <div class="field fk">partner_id (FK)</div>
+                            <div class="field">enrollment_date</div>
+                            <div class="field">status</div>
+                            <div class="description">Partner enrollments</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- DIMENSION LAYER -->
+            <div class="layer" style="margin-top: 60px;">
+                <div class="layer-title dimension">Dimension Tables</div>
+                <div class="tables-row">
+                    <div class="table dimension" id="DIM_PLANS" data-layer="dimension">
+                        <div class="table-header dimension">DIM_PLANS</div>
+                        <div class="table-body">
+                            <div class="field pk">plan_key (SK)</div>
+                            <div class="field">plan_id (NK)</div>
+                            <div class="field">plan_name</div>
+                            <div class="field">plan_type</div>
+                            <div class="field">price</div>
+                            <div class="field">billing_frequency</div>
+                            <div class="divider"></div>
+                            <div class="field">effective_date</div>
+                            <div class="field">end_date</div>
+                            <div class="field">is_current</div>
+                            <div class="description">Subscription plans dimension</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table dimension" id="DIM_USER" data-layer="dimension">
+                        <div class="table-header dimension">DIM_USER</div>
+                        <div class="table-body">
+                            <div class="field pk">user_key (SK)</div>
+                            <div class="field">user_id (NK)</div>
+                            <div class="field">username</div>
+                            <div class="field">email</div>
+                            <div class="field">role</div>
+                            <div class="field">department</div>
+                            <div class="divider"></div>
+                            <div class="field">effective_date</div>
+                            <div class="field">end_date</div>
+                            <div class="field">is_current</div>
+                            <div class="description">User dimension</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table dimension" id="DIM_ORGANIZATIONS" data-layer="dimension">
+                        <div class="table-header dimension">DIM_ORGANIZATIONS</div>
+                        <div class="table-body">
+                            <div class="field pk">organization_key (SK)</div>
+                            <div class="field">organization_id (NK)</div>
+                            <div class="field">organization_name</div>
+                            <div class="field">industry</div>
+                            <div class="field">size</div>
+                            <div class="field">country</div>
+                            <div class="divider"></div>
+                            <div class="field">effective_date</div>
+                            <div class="field">end_date</div>
+                            <div class="field">is_current</div>
+                            <div class="description">Organization dimension</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table dimension" id="RM_RELEASE_DATES" data-layer="dimension">
+                        <div class="table-header dimension">RM_RELEASE_DATES</div>
+                        <div class="table-body">
+                            <div class="field pk">release_date_key (SK)</div>
+                            <div class="field">release_id (NK)</div>
+                            <div class="field">release_name</div>
+                            <div class="field">release_date</div>
+                            <div class="field">release_type</div>
+                            <div class="field">version</div>
+                            <div class="description">Release management dates</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table dimension" id="RM_VERSION_META_DATA" data-layer="dimension">
+                        <div class="table-header dimension">RM_VERSION_META_DATA</div>
+                        <div class="table-body">
+                            <div class="field pk">version_key (SK)</div>
+                            <div class="field">version_id (NK)</div>
+                            <div class="field">version_number</div>
+                            <div class="field">version_name</div>
+                            <div class="field">release_notes</div>
+                            <div class="field">release_date</div>
+                            <div class="description">Version metadata dimension</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table dimension" id="RM_FACT_VERSION_DETAILS" data-layer="dimension">
+                        <div class="table-header dimension">RM_FACT_VERSION_DETAILS</div>
+                        <div class="table-body">
+                            <div class="field pk">version_detail_key (SK)</div>
+                            <div class="field fk">version_key (FK)</div>
+                            <div class="field">detail_type</div>
+                            <div class="field">detail_value</div>
+                            <div class="field">created_date</div>
+                            <div class="description">Version detail facts</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table dimension" id="API_DB_ACTUAL_ENTITLEMENTS" data-layer="dimension">
+                        <div class="table-header dimension">API_DB_ACTUAL_ENTITLEMENTS</div>
+                        <div class="table-body">
+                            <div class="field pk">entitlement_key (SK)</div>
+                            <div class="field">entitlement_id (NK)</div>
+                            <div class="field fk">user_key (FK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field">entitlement_type</div>
+                            <div class="field">quantity</div>
+                            <div class="field">start_date</div>
+                            <div class="field">end_date</div>
+                            <div class="description">Actual entitlements</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table dimension" id="SA_ALL_USER_ORG_MAPPINGS_A" data-layer="dimension">
+                        <div class="table-header dimension">SA_ALL_USER_ORG_MAPPINGS_A</div>
+                        <div class="table-body">
+                            <div class="field pk">mapping_key (SK)</div>
+                            <div class="field fk">user_key (FK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field">relationship_type</div>
+                            <div class="field">is_primary</div>
+                            <div class="field">created_date</div>
+                            <div class="description">User-org mappings</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FACT LAYER -->
+            <div class="layer" style="margin-top: 60px;">
+                <div class="layer-title fact">Fact Tables</div>
+                <div class="tables-row">
+                    <div class="table fact" id="FACT_DBU_AUTOMATIONS_USAGE_SNAPSHOTS_ACTUALS" data-layer="fact">
+                        <div class="table-header fact">FACT_DBU_AUTOMATIONS_USAGE_SNAPSHOTS_ACTUALS</div>
+                        <div class="table-body">
+                            <div class="field pk">snapshot_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">user_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">dbu_used</div>
+                            <div class="field">automation_count</div>
+                            <div class="field">snapshot_timestamp</div>
+                            <div class="description">DBU automation usage snapshots</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table fact" id="FACT_LAUNCH_USAGE_ACTUALS" data-layer="fact">
+                        <div class="table-header fact">FACT_LAUNCH_USAGE_ACTUALS</div>
+                        <div class="table-body">
+                            <div class="field pk">launch_usage_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">user_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">launch_count</div>
+                            <div class="field">total_duration</div>
+                            <div class="field">unique_users</div>
+                            <div class="description">Launch usage actuals</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table fact" id="FACT_ORG_API_USAGE_ACTUALS" data-layer="fact">
+                        <div class="table-header fact">FACT_ORG_API_USAGE_ACTUALS</div>
+                        <div class="table-body">
+                            <div class="field pk">api_usage_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">api_calls</div>
+                            <div class="field">bandwidth_used</div>
+                            <div class="field">error_count</div>
+                            <div class="description">Organization API usage</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table fact" id="FACT_ORG_DB_USAGE_ACTUALS" data-layer="fact">
+                        <div class="table-header fact">FACT_ORG_DB_USAGE_ACTUALS</div>
+                        <div class="table-body">
+                            <div class="field pk">db_usage_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">storage_gb</div>
+                            <div class="field">records_count</div>
+                            <div class="field">queries_executed</div>
+                            <div class="description">Database usage actuals</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table fact" id="FACT_MC_GAA_CDA_ORIGIN_DAILY_EVENTS_REQUESTS" data-layer="fact">
+                        <div class="table-header fact">FACT_MC_GAA_CDA_ORIGIN_DAILY_EVENTS_REQUESTS</div>
+                        <div class="table-body">
+                            <div class="field pk">event_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">event_count</div>
+                            <div class="field">request_count</div>
+                            <div class="field">origin</div>
+                            <div class="description">Marketing cloud events</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table fact" id="FACT_STACK_API_USAGE_ACTUALS" data-layer="fact">
+                        <div class="table-header fact">FACT_STACK_API_USAGE_ACTUALS</div>
+                        <div class="table-body">
+                            <div class="field pk">stack_usage_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">api_calls</div>
+                            <div class="field">stack_operations</div>
+                            <div class="field">latency_ms</div>
+                            <div class="description">Stack API usage</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SUMMARY/AGGREGATE LAYER -->
+            <div class="layer" style="margin-top: 60px;">
+                <div class="layer-title summary">Summary & Aggregate Tables</div>
+                <div class="tables-row">
+                    <div class="table summary" id="SUMMARY_DBU_AUTOMATION_DB_ACTUAL_USAGE" data-layer="summary">
+                        <div class="table-header summary">SUMMARY_DBU_AUTOMATION_DB_ACTUAL_USAGE</div>
+                        <div class="table-body">
+                            <div class="field pk">summary_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">total_dbu_used</div>
+                            <div class="field">total_automations</div>
+                            <div class="field">total_db_storage</div>
+                            <div class="field">avg_daily_usage</div>
+                            <div class="description">Aggregated DBU automation usage</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table summary" id="CUSTOMERS_PRODUCT_ADOPTION" data-layer="summary">
+                        <div class="table-header summary">CUSTOMERS_PRODUCT_ADOPTION</div>
+                        <div class="table-body">
+                            <div class="field pk">adoption_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">products_adopted</div>
+                            <div class="field">adoption_rate</div>
+                            <div class="field">feature_usage_count</div>
+                            <div class="field">adoption_score</div>
+                            <div class="description">Product adoption metrics</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table summary" id="SUMMARY_DREAMGUARD_ANNUAL_EDGE_GOALS" data-layer="summary">
+                        <div class="table-header summary">SUMMARY_DREAMGUARD_ANNUAL_EDGE_GOALS</div>
+                        <div class="table-body">
+                            <div class="field pk">goal_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">annual_goal</div>
+                            <div class="field">current_achievement</div>
+                            <div class="field">goal_percentage</div>
+                            <div class="field">edge_metric</div>
+                            <div class="description">Annual edge goals summary</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table summary" id="SUPERSUMMARY_ORG_USER" data-layer="summary">
+                        <div class="table-header summary">SUPERSUMMARY_ORG_USER</div>
+                        <div class="table-body">
+                            <div class="field pk">supersummary_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">user_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">total_activities</div>
+                            <div class="field">total_logins</div>
+                            <div class="field">total_api_calls</div>
+                            <div class="field">engagement_score</div>
+                            <div class="description">Organization-user supersummary</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table summary" id="SFDC_T1_CASE_TREND" data-layer="summary">
+                        <div class="table-header summary">SFDC_T1_CASE_TREND</div>
+                        <div class="table-body">
+                            <div class="field pk">trend_key (PK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">case_count</div>
+                            <div class="field">avg_resolution_time</div>
+                            <div class="field">escalation_rate</div>
+                            <div class="field">trend_direction</div>
+                            <div class="description">T1 case trend analysis</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table summary" id="SFDC_CASE_TREND" data-layer="summary">
+                        <div class="table-header summary">SFDC_CASE_TREND</div>
+                        <div class="table-body">
+                            <div class="field pk">trend_key (PK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">total_cases</div>
+                            <div class="field">open_cases</div>
+                            <div class="field">closed_cases</div>
+                            <div class="field">avg_age_days</div>
+                            <div class="field">trend_indicator</div>
+                            <div class="description">Overall case trend</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table summary" id="SFDC_T2_CASE_TREND" data-layer="summary">
+                        <div class="table-header summary">SFDC_T2_CASE_TREND</div>
+                        <div class="table-body">
+                            <div class="field pk">trend_key (PK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">case_count</div>
+                            <div class="field">avg_resolution_time</div>
+                            <div class="field">satisfaction_score</div>
+                            <div class="field">trend_direction</div>
+                            <div class="description">T2 case trend analysis</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table summary" id="HEALTH_INDEX" data-layer="summary">
+                        <div class="table-header summary">HEALTH_INDEX</div>
+                        <div class="table-body">
+                            <div class="field pk">health_index_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">health_score</div>
+                            <div class="field">usage_score</div>
+                            <div class="field">satisfaction_score</div>
+                            <div class="field">risk_level</div>
+                            <div class="description">Customer health index</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table summary" id="CUSTOMER_360" data-layer="summary">
+                        <div class="table-header summary">CUSTOMER_360</div>
+                        <div class="table-body">
+                            <div class="field pk">customer_360_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">lifetime_value</div>
+                            <div class="field">total_revenue</div>
+                            <div class="field">engagement_score</div>
+                            <div class="field">support_satisfaction</div>
+                            <div class="field">churn_risk</div>
+                            <div class="description">360° customer view</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table summary" id="CUSTOMER_360_OPP" data-layer="summary">
+                        <div class="table-header summary">CUSTOMER_360_OPP</div>
+                        <div class="table-body">
+                            <div class="field pk">customer_opp_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">opportunities_count</div>
+                            <div class="field">total_opportunity_value</div>
+                            <div class="field">win_rate</div>
+                            <div class="field">pipeline_value</div>
+                            <div class="description">Customer opportunities view</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table summary" id="SUMMARY_RELEASE_MANAGEMENT" data-layer="summary">
+                        <div class="table-header summary">SUMMARY_RELEASE_MANAGEMENT</div>
+                        <div class="table-body">
+                            <div class="field pk">release_summary_key (PK)</div>
+                            <div class="field fk">release_date_key (FK)</div>
+                            <div class="field fk">version_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">total_releases</div>
+                            <div class="field">successful_releases</div>
+                            <div class="field">failed_releases</div>
+                            <div class="field">avg_deployment_time</div>
+                            <div class="description">Release management summary</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table summary" id="SUMMARY_MARKETPLACE_APPS_INSTALLED" data-layer="summary">
+                        <div class="table-header summary">SUMMARY_MARKETPLACE_APPS_INSTALLED</div>
+                        <div class="table-body">
+                            <div class="field pk">marketplace_summary_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">total_apps_installed</div>
+                            <div class="field">active_apps</div>
+                            <div class="field">total_app_usage</div>
+                            <div class="field">app_adoption_rate</div>
+                            <div class="description">Marketplace apps summary</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table summary" id="SUMMARY_HEAP_USERS_ACTIVITY" data-layer="summary">
+                        <div class="table-header summary">SUMMARY_HEAP_USERS_ACTIVITY</div>
+                        <div class="table-body">
+                            <div class="field pk">heap_activity_key (PK)</div>
+                            <div class="field fk">user_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">total_events</div>
+                            <div class="field">unique_sessions</div>
+                            <div class="field">avg_session_duration</div>
+                            <div class="field">activity_score</div>
+                            <div class="description">Heap user activity summary</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tooltip" id="tooltip"></div>
+    </div>
+    
+    <script>
+        // Connection definitions based on the diagram
+        const connections = [
+            // Source to Dimension connections
+            { from: 'LEARNUPON_USERS', to: 'DIM_USER', type: 'source-to-dim', label: 'user_id' },
+            { from: 'LEARNUPON_USERS_PARTNER', to: 'DIM_USER', type: 'source-to-dim', label: 'user_id' },
+            { from: 'USERS_GSSCI', to: 'DIM_USER', type: 'source-to-dim', label: 'user_id' },
+            { from: 'HEAP', to: 'DIM_USER', type: 'source-to-dim', label: 'user_id' },
+            
+            // Dimension to Fact connections
+            { from: 'DIM_PLANS', to: 'FACT_DBU_AUTOMATIONS_USAGE_SNAPSHOTS_ACTUALS', type: 'dim-to-fact', label: 'plan_key' },
+            { from: 'DIM_PLANS', to: 'FACT_LAUNCH_USAGE_ACTUALS', type: 'dim-to-fact', label: 'plan_key' },
+            { from: 'DIM_PLANS', to: 'FACT_ORG_API_USAGE_ACTUALS', type: 'dim-to-fact', label: 'plan_key' },
+            { from: 'DIM_PLANS', to: 'FACT_ORG_DB_USAGE_ACTUALS', type: 'dim-to-fact', label: 'plan_key' },
+            { from: 'DIM_PLANS', to: 'FACT_MC_GAA_CDA_ORIGIN_DAILY_EVENTS_REQUESTS', type: 'dim-to-fact', label: 'plan_key' },
+            { from: 'DIM_PLANS', to: 'FACT_STACK_API_USAGE_ACTUALS', type: 'dim-to-fact', label: 'plan_key' },
+            
+            { from: 'DIM_USER', to: 'FACT_DBU_AUTOMATIONS_USAGE_SNAPSHOTS_ACTUALS', type: 'dim-to-fact', label: 'user_key' },
+            { from: 'DIM_USER', to: 'FACT_LAUNCH_USAGE_ACTUALS', type: 'dim-to-fact', label: 'user_key' },
+            { from: 'DIM_USER', to: 'FACT_STACK_API_USAGE_ACTUALS', type: 'dim-to-fact', label: 'user_key' },
+            
+            { from: 'DIM_ORGANIZATIONS', to: 'FACT_DBU_AUTOMATIONS_USAGE_SNAPSHOTS_ACTUALS', type: 'dim-to-fact', label: 'organization_key' },
+            { from: 'DIM_ORGANIZATIONS', to: 'FACT_LAUNCH_USAGE_ACTUALS', type: 'dim-to-fact', label: 'organization_key' },
+            { from: 'DIM_ORGANIZATIONS', to: 'FACT_ORG_API_USAGE_ACTUALS', type: 'dim-to-fact', label: 'organization_key' },
+            { from: 'DIM_ORGANIZATIONS', to: 'FACT_ORG_DB_USAGE_ACTUALS', type: 'dim-to-fact', label: 'organization_key' },
+            { from: 'DIM_ORGANIZATIONS', to: 'FACT_MC_GAA_CDA_ORIGIN_DAILY_EVENTS_REQUESTS', type: 'dim-to-fact', label: 'organization_key' },
+            { from: 'DIM_ORGANIZATIONS', to: 'FACT_STACK_API_USAGE_ACTUALS', type: 'dim-to-fact', label: 'organization_key' },
+            
+            { from: 'RM_RELEASE_DATES', to: 'SUMMARY_RELEASE_MANAGEMENT', type: 'dim-to-fact', label: 'release_date_key' },
+            { from: 'RM_VERSION_META_DATA', to: 'SUMMARY_RELEASE_MANAGEMENT', type: 'dim-to-fact', label: 'version_key' },
+            { from: 'RM_VERSION_META_DATA', to: 'RM_FACT_VERSION_DETAILS', type: 'dim-to-fact', label: 'version_key' },
+            
+            { from: 'DIM_USER', to: 'SA_ALL_USER_ORG_MAPPINGS_A', type: 'dim-to-fact', label: 'user_key' },
+            { from: 'DIM_ORGANIZATIONS', to: 'SA_ALL_USER_ORG_MAPPINGS_A', type: 'dim-to-fact', label: 'organization_key' },
+            
+            { from: 'DIM_USER', to: 'API_DB_ACTUAL_ENTITLEMENTS', type: 'dim-to-fact', label: 'user_key' },
+            { from: 'DIM_ORGANIZATIONS', to: 'API_DB_ACTUAL_ENTITLEMENTS', type: 'dim-to-fact', label: 'organization_key' },
+            
+            // Fact to Summary connections
+            { from: 'FACT_DBU_AUTOMATIONS_USAGE_SNAPSHOTS_ACTUALS', to: 'SUMMARY_DBU_AUTOMATION_DB_ACTUAL_USAGE', type: 'fact-to-summary', label: 'aggregates' },
+            { from: 'FACT_ORG_DB_USAGE_ACTUALS', to: 'SUMMARY_DBU_AUTOMATION_DB_ACTUAL_USAGE', type: 'fact-to-summary', label: 'aggregates' },
+            
+            { from: 'FACT_LAUNCH_USAGE_ACTUALS', to: 'CUSTOMERS_PRODUCT_ADOPTION', type: 'fact-to-summary', label: 'aggregates' },
+            { from: 'FACT_ORG_API_USAGE_ACTUALS', to: 'CUSTOMERS_PRODUCT_ADOPTION', type: 'fact-to-summary', label: 'aggregates' },
+            
+            { from: 'API_DB_ACTUAL_ENTITLEMENTS', to: 'SUMMARY_DREAMGUARD_ANNUAL_EDGE_GOALS', type: 'fact-to-summary', label: 'aggregates' },
+            
+            { from: 'SA_ALL_USER_ORG_MAPPINGS_A', to: 'SUPERSUMMARY_ORG_USER', type: 'fact-to-summary', label: 'aggregates' },
+            { from: 'FACT_STACK_API_USAGE_ACTUALS', to: 'SUPERSUMMARY_ORG_USER', type: 'fact-to-summary', label: 'aggregates' },
+            
+            { from: 'FACT_MC_GAA_CDA_ORIGIN_DAILY_EVENTS_REQUESTS', to: 'SFDC_T1_CASE_TREND', type: 'fact-to-summary', label: 'aggregates' },
+            { from: 'FACT_MC_GAA_CDA_ORIGIN_DAILY_EVENTS_REQUESTS', to: 'SFDC_CASE_TREND', type: 'fact-to-summary', label: 'aggregates' },
+            { from: 'FACT_MC_GAA_CDA_ORIGIN_DAILY_EVENTS_REQUESTS', to: 'SFDC_T2_CASE_TREND', type: 'fact-to-summary', label: 'aggregates' },
+            
+            { from: 'FACT_LAUNCH_USAGE_ACTUALS', to: 'HEALTH_INDEX', type: 'fact-to-summary', label: 'aggregates' },
+            { from: 'FACT_ORG_API_USAGE_ACTUALS', to: 'HEALTH_INDEX', type: 'fact-to-summary', label: 'aggregates' },
+            
+            { from: 'FACT_LAUNCH_USAGE_ACTUALS', to: 'CUSTOMER_360', type: 'fact-to-summary', label: 'aggregates' },
+            { from: 'FACT_ORG_API_USAGE_ACTUALS', to: 'CUSTOMER_360', type: 'fact-to-summary', label: 'aggregates' },
+            { from: 'FACT_ORG_DB_USAGE_ACTUALS', to: 'CUSTOMER_360', type: 'fact-to-summary', label: 'aggregates' },
+            
+            { from: 'FACT_LAUNCH_USAGE_ACTUALS', to: 'CUSTOMER_360_OPP', type: 'fact-to-summary', label: 'aggregates' },
+            
+            { from: 'RM_FACT_VERSION_DETAILS', to: 'SUMMARY_RELEASE_MANAGEMENT', type: 'fact-to-summary', label: 'aggregates' },
+            
+            { from: 'FACT_STACK_API_USAGE_ACTUALS', to: 'SUMMARY_MARKETPLACE_APPS_INSTALLED', type: 'fact-to-summary', label: 'aggregates' },
+            
+            // Source to Summary (direct connections from diagram)
+            { from: 'HEAP', to: 'SUMMARY_HEAP_USERS_ACTIVITY', type: 'source-to-dim', label: 'aggregates' },
+            
+            // Dimension to Summary (direct connections)
+            { from: 'DIM_ORGANIZATIONS', to: 'CUSTOMERS_PRODUCT_ADOPTION', type: 'fact-to-summary', label: 'organization_key' },
+            { from: 'DIM_ORGANIZATIONS', to: 'SUMMARY_DBU_AUTOMATION_DB_ACTUAL_USAGE', type: 'fact-to-summary', label: 'organization_key' },
+            { from: 'DIM_ORGANIZATIONS', to: 'SUMMARY_DREAMGUARD_ANNUAL_EDGE_GOALS', type: 'fact-to-summary', label: 'organization_key' },
+            { from: 'DIM_USER', to: 'SUPERSUMMARY_ORG_USER', type: 'fact-to-summary', label: 'user_key' },
+            { from: 'DIM_ORGANIZATIONS', to: 'SUPERSUMMARY_ORG_USER', type: 'fact-to-summary', label: 'organization_key' },
+            { from: 'DIM_ORGANIZATIONS', to: 'HEALTH_INDEX', type: 'fact-to-summary', label: 'organization_key' },
+            { from: 'DIM_ORGANIZATIONS', to: 'CUSTOMER_360', type: 'fact-to-summary', label: 'organization_key' },
+            { from: 'DIM_ORGANIZATIONS', to: 'CUSTOMER_360_OPP', type: 'fact-to-summary', label: 'organization_key' },
+            { from: 'DIM_ORGANIZATIONS', to: 'SUMMARY_MARKETPLACE_APPS_INSTALLED', type: 'fact-to-summary', label: 'organization_key' },
+            { from: 'DIM_USER', to: 'SUMMARY_HEAP_USERS_ACTIVITY', type: 'fact-to-summary', label: 'user_key' },
+            
+            // Source table relationships
+            { from: 'OPPORTUNITY', to: 'ACCOUNT', type: 'source-to-dim', label: 'account_id' },
+            { from: 'CASE', to: 'ACCOUNT', type: 'source-to-dim', label: 'account_id' },
+            { from: 'CASE', to: 'CONTACT', type: 'source-to-dim', label: 'contact_id' },
+            { from: 'CONTRACT', to: 'ACCOUNT', type: 'source-to-dim', label: 'account_id' },
+            { from: 'CUSTOMER_EXPERIENCE', to: 'ACCOUNT', type: 'source-to-dim', label: 'customer_id' },
+            { from: 'CUSTOMER_COMMITMENT_TRACKING', to: 'ACCOUNT', type: 'source-to-dim', label: 'customer_id' },
+            { from: 'FEEDBACK_SURVEY', to: 'ACCOUNT', type: 'source-to-dim', label: 'customer_id' },
+            { from: 'LEARNUPON_ENROLLMENTS', to: 'LEARNUPON_USERS', type: 'source-to-dim', label: 'user_id' },
+            { from: 'LEARNUPON_USERS_PARTNER', to: 'LEARNUPON_USERS', type: 'source-to-dim', label: 'user_id' },
+            { from: 'LEARNUPON_ENROLLMENTS_PARTNER', to: 'LEARNUPON_ENROLLMENTS', type: 'source-to-dim', label: 'enrollment_id' },
+        ];
+        
+        let currentFilter = 'all';
+        
+        // Get element position
+        function getPosition(element) {
+            const rect = element.getBoundingClientRect();
+            const canvas = document.getElementById('canvas').getBoundingClientRect();
+            return {
+                x: rect.left - canvas.left + rect.width / 2,
+                y: rect.top - canvas.top + rect.height / 2,
+                width: rect.width,
+                height: rect.height
+            };
+        }
+        
+        // Create curved path avoiding overlaps
+        function createPath(from, to, index, total) {
+            const offset = 25 * (index - total / 2);
+            const midY = (from.y + to.y) / 2;
+            
+            // Control points for smooth curve
+            const cp1x = from.x + offset;
+            const cp1y = from.y + (midY - from.y) * 0.5;
+            const cp2x = to.x + offset;
+            const cp2y = to.y - (to.y - midY) * 0.5;
+            
+            return `M ${from.x} ${from.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${to.x} ${to.y}`;
+        }
+        
+        // Draw all connections
+        function drawConnections() {
+            const svg = document.getElementById('svg-connections');
+            svg.innerHTML = '';
+            
+            // Group connections by type for offset calculation
+            const connectionsByType = {};
+            connections.forEach((conn, idx) => {
+                const key = `${conn.from}-${conn.to}`;
+                if (!connectionsByType[key]) {
+                    connectionsByType[key] = [];
+                }
+                connectionsByType[key].push({ ...conn, originalIndex: idx });
+            });
+            
+            connections.forEach((conn, idx) => {
+                const fromEl = document.getElementById(conn.from);
+                const toEl = document.getElementById(conn.to);
+                
+                if (!fromEl || !toEl) return;
+                
+                const fromPos = getPosition(fromEl);
+                const toPos = getPosition(toEl);
+                
+                const key = `${conn.from}-${conn.to}`;
+                const group = connectionsByType[key];
+                const indexInGroup = group.findIndex(c => c.originalIndex === idx);
+                
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', createPath(fromPos, toPos, indexInGroup, group.length));
+                path.setAttribute('class', `connection ${conn.type}`);
+                path.setAttribute('data-from', conn.from);
+                path.setAttribute('data-to', conn.to);
+                path.setAttribute('data-type', conn.type);
+                path.setAttribute('data-label', conn.label);
+                
+                svg.appendChild(path);
+            });
+            
+            // Apply current filter
+            applyFilter(currentFilter);
+        }
+        
+        // Apply filter
+        function applyFilter(filterType) {
+            const paths = document.querySelectorAll('.connection');
+            paths.forEach(path => {
+                if (filterType === 'all') {
+                    path.style.display = 'block';
+                } else if (filterType === path.getAttribute('data-type')) {
+                    path.style.display = 'block';
+                } else {
+                    path.style.display = 'none';
+                }
+            });
+        }
+        
+        // Show all connections
+        function showAllConnections() {
+            currentFilter = 'all';
+            applyFilter('all');
+            updateActiveButton('Show All');
+        }
+        
+        // Show specific connection type
+        function showConnectionType(type) {
+            currentFilter = type;
+            applyFilter(type);
+            const buttonText = {
+                'source-to-dim': 'Source → Dim',
+                'dim-to-fact': 'Dim → Fact',
+                'fact-to-summary': 'Fact → Summary'
+            };
+            updateActiveButton(buttonText[type]);
+        }
+        
+        // Hide all connections
+        function hideAllConnections() {
+            currentFilter = 'none';
+            const paths = document.querySelectorAll('.connection');
+            paths.forEach(path => {
+                path.style.display = 'none';
+            });
+            updateActiveButton('Hide All');
+        }
+        
+        // Update active button
+        function updateActiveButton(text) {
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === text) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+        
+        // Table hover interactions
+        function setupTableInteractions() {
+            const tables = document.querySelectorAll('.table');
+            const tooltip = document.getElementById('tooltip');
+            
+            tables.forEach(table => {
+                table.addEventListener('mouseenter', function() {
+                    const tableId = this.id;
+                    highlightConnections(tableId);
+                });
+                
+                table.addEventListener('mouseleave', function() {
+                    clearHighlights();
+                });
+                
+                table.addEventListener('click', function() {
+                    const layer = this.getAttribute('data-layer');
+                    const tableName = this.querySelector('.table-header').textContent;
+                    tooltip.textContent = `${layer.toUpperCase()}: ${tableName}`;
+                    tooltip.classList.add('show');
+                    
+                    const rect = this.getBoundingClientRect();
+                    tooltip.style.left = rect.left + 'px';
+                    tooltip.style.top = (rect.top - 40) + 'px';
+                    
+                    setTimeout(() => {
+                        tooltip.classList.remove('show');
+                    }, 2000);
+                });
+            });
+            
+            // FK field hover
+            const fkFields = document.querySelectorAll('.field.fk[data-ref]');
+            fkFields.forEach(field => {
+                field.addEventListener('mouseenter', function() {
+                    const refTable = this.getAttribute('data-ref');
+                    const parentTable = this.closest('.table').id;
+                    highlightSpecificConnection(refTable, parentTable);
+                });
+                
+                field.addEventListener('mouseleave', function() {
+                    clearHighlights();
+                });
+            });
+        }
+        
+        // Highlight connections for a table
+        function highlightConnections(tableId) {
+            const paths = document.querySelectorAll('.connection');
+            paths.forEach(path => {
+                const from = path.getAttribute('data-from');
+                const to = path.getAttribute('data-to');
+                
+                if (from === tableId || to === tableId) {
+                    path.classList.add('active');
+                    
+                    // Highlight connected tables
+                    const connectedId = from === tableId ? to : from;
+                    const connectedTable = document.getElementById(connectedId);
+                    if (connectedTable) {
+                        connectedTable.classList.add('highlighted');
+                    }
+                }
+            });
+        }
+        
+        // Highlight specific connection
+        function highlightSpecificConnection(from, to) {
+            const paths = document.querySelectorAll('.connection');
+            paths.forEach(path => {
+                const pathFrom = path.getAttribute('data-from');
+                const pathTo = path.getAttribute('data-to');
+                
+                if (pathFrom === from && pathTo === to) {
+                    path.classList.add('active');
+                    
+                    const fromTable = document.getElementById(from);
+                    const toTable = document.getElementById(to);
+                    if (fromTable) fromTable.classList.add('highlighted');
+                    if (toTable) toTable.classList.add('highlighted');
+                }
+            });
+        }
+        
+        // Clear all highlights
+        function clearHighlights() {
+            document.querySelectorAll('.connection.active').forEach(path => {
+                path.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.table.highlighted').forEach(table => {
+                table.classList.remove('highlighted');
+            });
+        }
+        
+        // Initialize
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                drawConnections();
+                setupTableInteractions();
+            }, 100);
+        });
+        
+        // Redraw on window resize
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                drawConnections();
+            }, 250);
+        });
+    </script>
+</body>
+</html>
