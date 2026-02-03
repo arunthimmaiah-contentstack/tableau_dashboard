@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salesforce Data Model - Interactive</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 100%;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1976D2;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+        
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            border: 2px solid;
+        }
+        
+        .source { background: #00796B; border-color: #004D40; }
+        .dimension { background: #9C27B0; border-color: #6A1B9A; }
+        .fact { background: #FF6F00; border-color: #E65100; }
+        .mart { background: #1976D2; border-color: #0D47A1; }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            padding: 8px 16px;
+            border: 2px solid #1976D2;
+            background: white;
+            color: #1976D2;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover {
+            background: #1976D2;
+            color: white;
+        }
+        
+        .control-btn.active {
+            background: #1976D2;
+            color: white;
+        }
+        
+        .diagram-canvas {
+            position: relative;
+            width: 100%;
+            min-height: 2200px;
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+        
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .layer {
+            position: relative;
+            z-index: 2;
+            padding: 20px;
+        }
+        
+        .layer-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding: 12px;
+            border-radius: 5px;
+            color: white;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .layer-title.source { background: linear-gradient(135deg, #00796B 0%, #004D40 100%); }
+        .layer-title.dimension { background: linear-gradient(135deg, #9C27B0 0%, #6A1B9A 100%); }
+        .layer-title.fact { background: linear-gradient(135deg, #FF6F00 0%, #E65100 100%); }
+        .layer-title.mart { background: linear-gradient(135deg, #1976D2 0%, #0D47A1 100%); }
+        
+        .tables-row {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            align-items: flex-start;
+        }
+        
+        .table {
+            border: 2px solid;
+            border-radius: 6px;
+            background: white;
+            min-width: 240px;
+            max-width: 240px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .table:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .table.highlighted {
+            box-shadow: 0 0 0 3px #FFD700;
+            transform: translateY(-5px);
+        }
+        
+        .table.source { border-color: #004D40; }
+        .table.dimension { border-color: #6A1B9A; }
+        .table.fact { border-color: #E65100; }
+        .table.mart { border-color: #0D47A1; }
+        
+        .table-header {
+            padding: 12px;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            border-radius: 4px 4px 0 0;
+            font-size: 14px;
+        }
+        
+        .table-header.source { background: #00796B; }
+        .table-header.dimension { background: #9C27B0; }
+        .table-header.fact { background: #FF6F00; }
+        .table-header.mart { background: #1976D2; }
+        
+        .table-body {
+            padding: 12px;
+        }
+        
+        .field {
+            font-size: 11px;
+            padding: 4px 0;
+            color: #333;
+        }
+        
+        .field.pk {
+            color: #D4AF37;
+            font-weight: bold;
+        }
+        
+        .field.fk {
+            color: #1976D2;
+        }
+        
+        .field.fk:hover {
+            background: #E3F2FD;
+            cursor: pointer;
+        }
+        
+        .divider {
+            border-top: 1px solid #e0e0e0;
+            margin: 8px 0;
+        }
+        
+        .description {
+            font-size: 10px;
+            color: #666;
+            font-style: italic;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .connection {
+            fill: none;
+            stroke: #999;
+            stroke-width: 2;
+            opacity: 0.3;
+            transition: all 0.3s;
+        }
+        
+        .connection.active {
+            stroke: #1976D2;
+            stroke-width: 3;
+            opacity: 1;
+            filter: drop-shadow(0 0 4px #1976D2);
+        }
+        
+        .connection.dim-to-fact {
+            stroke: #9C27B0;
+        }
+        
+        .connection.fact-to-mart {
+            stroke: #FF6F00;
+        }
+        
+        .connection-label {
+            font-size: 10px;
+            fill: #666;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        
+        .connection-label.active {
+            opacity: 1;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+            white-space: nowrap;
+        }
+        
+        .tooltip.show {
+            opacity: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .table {
+                min-width: 200px;
+                max-width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Salesforce End-to-End Data Architecture</h1>
+        <p class="subtitle">Interactive Data Model: Source → Dimensions → Facts → Data Marts</p>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-box source"></div>
+                <span>Source Layer</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box dimension"></div>
+                <span>Dimension Layer</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box fact"></div>
+                <span>Fact Layer</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box mart"></div>
+                <span>Mart Layer</span>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="control-btn active" onclick="showAllConnections()">Show All</button>
+            <button class="control-btn" onclick="showConnectionType('dim-to-fact')">Dim → Fact</button>
+            <button class="control-btn" onclick="showConnectionType('fact-to-mart')">Fact → Mart</button>
+            <button class="control-btn" onclick="hideAllConnections()">Hide All</button>
+        </div>
+        
+        <div class="diagram-canvas" id="canvas">
+            <svg id="svg-connections"></svg>
+            
+            <!-- SOURCE LAYER -->
+            <div class="layer">
+                <div class="layer-title source">Source Layer - Salesforce Objects</div>
+                <div class="tables-row">
+                    <div class="table source" id="Account" data-layer="source">
+                        <div class="table-header source">Account</div>
+                        <div class="table-body">
+                            <div class="field pk">Id (PK)</div>
+                            <div class="field">Name</div>
+                            <div class="field">Type</div>
+                            <div class="field">Industry</div>
+                            <div class="field">AnnualRevenue</div>
+                            <div class="field fk">OwnerId (FK)</div>
+                            <div class="description">Customer/Company records</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="Contact" data-layer="source">
+                        <div class="table-header source">Contact</div>
+                        <div class="table-body">
+                            <div class="field pk">Id (PK)</div>
+                            <div class="field">FirstName, LastName</div>
+                            <div class="field">Email, Phone</div>
+                            <div class="field">Title</div>
+                            <div class="field fk">AccountId (FK)</div>
+                            <div class="field fk">OwnerId (FK)</div>
+                            <div class="description">Individual contacts</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="Opportunity" data-layer="source">
+                        <div class="table-header source">Opportunity</div>
+                        <div class="table-body">
+                            <div class="field pk">Id (PK)</div>
+                            <div class="field">Name</div>
+                            <div class="field">Amount</div>
+                            <div class="field">StageName</div>
+                            <div class="field">CloseDate</div>
+                            <div class="field fk">AccountId (FK)</div>
+                            <div class="field fk">OwnerId (FK)</div>
+                            <div class="description">Sales deals pipeline</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="Lead" data-layer="source">
+                        <div class="table-header source">Lead</div>
+                        <div class="table-body">
+                            <div class="field pk">Id (PK)</div>
+                            <div class="field">FirstName, LastName</div>
+                            <div class="field">Company</div>
+                            <div class="field">Status, LeadSource</div>
+                            <div class="field fk">OwnerId (FK)</div>
+                            <div class="description">Prospective customers</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="Case" data-layer="source">
+                        <div class="table-header source">Case</div>
+                        <div class="table-body">
+                            <div class="field pk">Id (PK)</div>
+                            <div class="field">CaseNumber</div>
+                            <div class="field">Status, Priority</div>
+                            <div class="field fk">AccountId (FK)</div>
+                            <div class="field fk">ContactId (FK)</div>
+                            <div class="description">Support tickets</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="Product2" data-layer="source">
+                        <div class="table-header source">Product2</div>
+                        <div class="table-body">
+                            <div class="field pk">Id (PK)</div>
+                            <div class="field">Name</div>
+                            <div class="field">ProductCode</div>
+                            <div class="field">Family</div>
+                            <div class="field">IsActive</div>
+                            <div class="description">Product catalog</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="Campaign" data-layer="source">
+                        <div class="table-header source">Campaign</div>
+                        <div class="table-body">
+                            <div class="field pk">Id (PK)</div>
+                            <div class="field">Name, Type</div>
+                            <div class="field">Status</div>
+                            <div class="field">StartDate, EndDate</div>
+                            <div class="field fk">OwnerId (FK)</div>
+                            <div class="description">Marketing campaigns</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="User" data-layer="source">
+                        <div class="table-header source">User</div>
+                        <div class="table-body">
+                            <div class="field pk">Id (PK)</div>
+                            <div class="field">Username</div>
+                            <div class="field">Email</div>
+                            <div class="field">FirstName, LastName</div>
+                            <div class="description">Salesforce users</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- DIMENSION LAYER -->
+            <div class="layer" style="margin-top: 60px;">
+                <div class="layer-title dimension">Dimension Layer - SCD Type 2</div>
+                <div class="tables-row">
+                    <div class="table dimension" id="DimAccount" data-layer="dimension">
+                        <div class="table-header dimension">dim_account</div>
+                        <div class="table-body">
+                            <div class="field pk">account_key (SK)</div>
+                            <div class="field">account_id (NK)</div>
+                            <div class="field">account_name</div>
+                            <div class="field">account_type</div>
+                            <div class="field">industry</div>
+                            <div class="divider"></div>
+                            <div class="field">effective_date</div>
+                            <div class="field">end_date</div>
+                            <div class="field">is_current</div>
+                            <div class="description">Account attributes with history</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table dimension" id="DimContact" data-layer="dimension">
+                        <div class="table-header dimension">dim_contact</div>
+                        <div class="table-body">
+                            <div class="field pk">contact_key (SK)</div>
+                            <div class="field">contact_id (NK)</div>
+                            <div class="field">full_name</div>
+                            <div class="field">email, title</div>
+                            <div class="divider"></div>
+                            <div class="field">effective_date</div>
+                            <div class="field">end_date</div>
+                            <div class="field">is_current</div>
+                            <div class="description">Contact dimension</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table dimension" id="DimUser" data-layer="dimension">
+                        <div class="table-header dimension">dim_user</div>
+                        <div class="table-body">
+                            <div class="field pk">user_key (SK)</div>
+                            <div class="field">user_id (NK)</div>
+                            <div class="field">username</div>
+                            <div class="field">role_name</div>
+                            <div class="divider"></div>
+                            <div class="field">effective_date</div>
+                            <div class="field">end_date</div>
+                            <div class="field">is_current</div>
+                            <div class="description">User/Owner dimension</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table dimension" id="DimProduct" data-layer="dimension">
+                        <div class="table-header dimension">dim_product</div>
+                        <div class="table-body">
+                            <div class="field pk">product_key (SK)</div>
+                            <div class="field">product_id (NK)</div>
+                            <div class="field">product_name</div>
+                            <div class="field">product_family</div>
+                            <div class="divider"></div>
+                            <div class="field">effective_date</div>
+                            <div class="field">end_date</div>
+                            <div class="field">is_current</div>
+                            <div class="description">Product dimension</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table dimension" id="DimCampaign" data-layer="dimension">
+                        <div class="table-header dimension">dim_campaign</div>
+                        <div class="table-body">
+                            <div class="field pk">campaign_key (SK)</div>
+                            <div class="field">campaign_id (NK)</div>
+                            <div class="field">campaign_name</div>
+                            <div class="field">campaign_type</div>
+                            <div class="divider"></div>
+                            <div class="field">effective_date</div>
+                            <div class="field">end_date</div>
+                            <div class="field">is_current</div>
+                            <div class="description">Campaign dimension</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table dimension" id="DimDate" data-layer="dimension">
+                        <div class="table-header dimension">dim_date</div>
+                        <div class="table-body">
+                            <div class="field pk">date_key (SK)</div>
+                            <div class="field">full_date</div>
+                            <div class="field">month, quarter, year</div>
+                            <div class="field">fiscal_period</div>
+                            <div class="field">fiscal_quarter</div>
+                            <div class="field">fiscal_year</div>
+                            <div class="description">Date/calendar dimension</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table dimension" id="DimStage" data-layer="dimension">
+                        <div class="table-header dimension">dim_opportunity_stage</div>
+                        <div class="table-body">
+                            <div class="field pk">stage_key (SK)</div>
+                            <div class="field">stage_name</div>
+                            <div class="field">is_closed</div>
+                            <div class="field">is_won</div>
+                            <div class="field">probability</div>
+                            <div class="description">Opportunity stages</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FACT LAYER -->
+            <div class="layer" style="margin-top: 60px;">
+                <div class="layer-title fact">Fact Layer - Transactions & Events</div>
+                <div class="tables-row">
+                    <div class="table fact" id="FactOpportunity" data-layer="fact">
+                        <div class="table-header fact">fact_opportunity</div>
+                        <div class="table-body">
+                            <div class="field pk">opportunity_key (PK)</div>
+                            <div class="field fk" data-ref="DimAccount">account_key (FK)</div>
+                            <div class="field fk" data-ref="DimUser">owner_key (FK)</div>
+                            <div class="field fk" data-ref="DimStage">stage_key (FK)</div>
+                            <div class="field fk" data-ref="DimDate">created_date_key (FK)</div>
+                            <div class="field fk" data-ref="DimDate">close_date_key (FK)</div>
+                            <div class="field fk" data-ref="DimCampaign">campaign_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">amount</div>
+                            <div class="field">probability</div>
+                            <div class="field">is_won</div>
+                            <div class="description">Pipeline metrics</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table fact" id="FactSales" data-layer="fact">
+                        <div class="table-header fact">fact_sales</div>
+                        <div class="table-body">
+                            <div class="field pk">sales_key (PK)</div>
+                            <div class="field fk" data-ref="DimAccount">account_key (FK)</div>
+                            <div class="field fk" data-ref="DimProduct">product_key (FK)</div>
+                            <div class="field fk" data-ref="DimUser">owner_key (FK)</div>
+                            <div class="field fk" data-ref="DimDate">sale_date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">revenue_amount</div>
+                            <div class="field">quantity_sold</div>
+                            <div class="field">profit_amount</div>
+                            <div class="description">Revenue metrics</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table fact" id="FactLead" data-layer="fact">
+                        <div class="table-header fact">fact_lead</div>
+                        <div class="table-body">
+                            <div class="field pk">lead_key (PK)</div>
+                            <div class="field fk" data-ref="DimUser">owner_key (FK)</div>
+                            <div class="field fk" data-ref="DimCampaign">campaign_key (FK)</div>
+                            <div class="field fk" data-ref="DimDate">created_date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">is_converted</div>
+                            <div class="field">days_to_conversion</div>
+                            <div class="field">lead_score</div>
+                            <div class="description">Lead lifecycle</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table fact" id="FactCase" data-layer="fact">
+                        <div class="table-header fact">fact_case</div>
+                        <div class="table-body">
+                            <div class="field pk">case_key (PK)</div>
+                            <div class="field fk" data-ref="DimAccount">account_key (FK)</div>
+                            <div class="field fk" data-ref="DimContact">contact_key (FK)</div>
+                            <div class="field fk" data-ref="DimUser">owner_key (FK)</div>
+                            <div class="field fk" data-ref="DimDate">created_date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">resolution_time_hours</div>
+                            <div class="field">is_escalated</div>
+                            <div class="field">met_sla</div>
+                            <div class="description">Support metrics</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table fact" id="FactActivity" data-layer="fact">
+                        <div class="table-header fact">fact_activity</div>
+                        <div class="table-body">
+                            <div class="field pk">activity_key (PK)</div>
+                            <div class="field fk" data-ref="DimContact">contact_key (FK)</div>
+                            <div class="field fk" data-ref="DimAccount">account_key (FK)</div>
+                            <div class="field fk" data-ref="DimUser">owner_key (FK)</div>
+                            <div class="field fk" data-ref="DimDate">activity_date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">activity_count</div>
+                            <div class="field">duration_minutes</div>
+                            <div class="description">Task/event metrics</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table fact" id="FactCampaignPerf" data-layer="fact">
+                        <div class="table-header fact">fact_campaign_performance</div>
+                        <div class="table-body">
+                            <div class="field pk">campaign_perf_key (PK)</div>
+                            <div class="field fk" data-ref="DimCampaign">campaign_key (FK)</div>
+                            <div class="field fk" data-ref="DimDate">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">leads_generated</div>
+                            <div class="field">total_revenue</div>
+                            <div class="field">roi_percent</div>
+                            <div class="description">Campaign effectiveness</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- MART LAYER -->
+            <div class="layer" style="margin-top: 60px;">
+                <div class="layer-title mart">Mart Layer - Business Analytics</div>
+                <div class="tables-row">
+                    <div class="table mart" id="MartSales" data-layer="mart">
+                        <div class="table-header mart">mart_sales_performance</div>
+                        <div class="table-body">
+                            <div class="field pk">sales_perf_key (PK)</div>
+                            <div class="field fk" data-ref="DimAccount">account_key (FK)</div>
+                            <div class="field fk" data-ref="DimUser">owner_key (FK)</div>
+                            <div class="field fk" data-ref="DimProduct">product_key (FK)</div>
+                            <div class="field fk" data-ref="DimDate">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">total_revenue</div>
+                            <div class="field">win_rate</div>
+                            <div class="field">quota_attainment</div>
+                            <div class="description">Sales performance KPIs</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table mart" id="MartMarketing" data-layer="mart">
+                        <div class="table-header mart">mart_marketing_attribution</div>
+                        <div class="table-body">
+                            <div class="field pk">marketing_attr_key (PK)</div>
+                            <div class="field fk" data-ref="DimCampaign">campaign_key (FK)</div>
+                            <div class="field fk" data-ref="DimDate">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">leads_generated</div>
+                            <div class="field">influenced_revenue</div>
+                            <div class="field">roi</div>
+                            <div class="field">conversion_rate</div>
+                            <div class="description">Campaign ROI & attribution</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table mart" id="MartCustomer360" data-layer="mart">
+                        <div class="table-header mart">mart_customer_360</div>
+                        <div class="table-body">
+                            <div class="field pk">customer_360_key (PK)</div>
+                            <div class="field fk" data-ref="DimAccount">account_key (FK)</div>
+                            <div class="field fk" data-ref="DimDate">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">lifetime_value</div>
+                            <div class="field">health_score</div>
+                            <div class="field">engagement_level</div>
+                            <div class="field">at_risk</div>
+                            <div class="description">360° customer view</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table mart" id="MartService" data-layer="mart">
+                        <div class="table-header mart">mart_service_metrics</div>
+                        <div class="table-body">
+                            <div class="field pk">service_metrics_key (PK)</div>
+                            <div class="field fk" data-ref="DimAccount">account_key (FK)</div>
+                            <div class="field fk" data-ref="DimUser">owner_key (FK)</div>
+                            <div class="field fk" data-ref="DimDate">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">avg_resolution_time</div>
+                            <div class="field">sla_compliance_rate</div>
+                            <div class="field">csat_score</div>
+                            <div class="description">Service team performance</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table mart" id="MartExecutive" data-layer="mart">
+                        <div class="table-header mart">mart_executive_kpi</div>
+                        <div class="table-body">
+                            <div class="field pk">exec_kpi_key (PK)</div>
+                            <div class="field fk" data-ref="DimDate">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">total_revenue</div>
+                            <div class="field">arr, mrr</div>
+                            <div class="field">net_revenue_retention</div>
+                            <div class="field">churn_rate</div>
+                            <div class="field">pipeline_coverage</div>
+                            <div class="description">Executive dashboard KPIs</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tooltip" id="tooltip"></div>
+    </div>
+    
+    <script>
+        // Connection definitions
+        const connections = [
+            // Dimension to Fact connections
+            { from: 'DimAccount', to: 'FactOpportunity', type: 'dim-to-fact', label: 'account_key' },
+            { from: 'DimAccount', to: 'FactSales', type: 'dim-to-fact', label: 'account_key' },
+            { from: 'DimAccount', to: 'FactCase', type: 'dim-to-fact', label: 'account_key' },
+            { from: 'DimAccount', to: 'FactActivity', type: 'dim-to-fact', label: 'account_key' },
+            
+            { from: 'DimContact', to: 'FactCase', type: 'dim-to-fact', label: 'contact_key' },
+            { from: 'DimContact', to: 'FactActivity', type: 'dim-to-fact', label: 'contact_key' },
+            
+            { from: 'DimUser', to: 'FactOpportunity', type: 'dim-to-fact', label: 'owner_key' },
+            { from: 'DimUser', to: 'FactSales', type: 'dim-to-fact', label: 'owner_key' },
+            { from: 'DimUser', to: 'FactLead', type: 'dim-to-fact', label: 'owner_key' },
+            { from: 'DimUser', to: 'FactCase', type: 'dim-to-fact', label: 'owner_key' },
+            { from: 'DimUser', to: 'FactActivity', type: 'dim-to-fact', label: 'owner_key' },
+            
+            { from: 'DimProduct', to: 'FactSales', type: 'dim-to-fact', label: 'product_key' },
+            
+            { from: 'DimCampaign', to: 'FactOpportunity', type: 'dim-to-fact', label: 'campaign_key' },
+            { from: 'DimCampaign', to: 'FactLead', type: 'dim-to-fact', label: 'campaign_key' },
+            { from: 'DimCampaign', to: 'FactCampaignPerf', type: 'dim-to-fact', label: 'campaign_key' },
+            
+            { from: 'DimDate', to: 'FactOpportunity', type: 'dim-to-fact', label: 'date_key' },
+            { from: 'DimDate', to: 'FactSales', type: 'dim-to-fact', label: 'date_key' },
+            { from: 'DimDate', to: 'FactLead', type: 'dim-to-fact', label: 'date_key' },
+            { from: 'DimDate', to: 'FactCase', type: 'dim-to-fact', label: 'date_key' },
+            { from: 'DimDate', to: 'FactActivity', type: 'dim-to-fact', label: 'date_key' },
+            { from: 'DimDate', to: 'FactCampaignPerf', type: 'dim-to-fact', label: 'date_key' },
+            
+            { from: 'DimStage', to: 'FactOpportunity', type: 'dim-to-fact', label: 'stage_key' },
+            
+            // Fact to Mart connections
+            { from: 'FactOpportunity', to: 'MartSales', type: 'fact-to-mart', label: 'aggregates' },
+            { from: 'FactSales', to: 'MartSales', type: 'fact-to-mart', label: 'aggregates' },
+            { from: 'FactLead', to: 'MartMarketing', type: 'fact-to-mart', label: 'aggregates' },
+            { from: 'FactCampaignPerf', to: 'MartMarketing', type: 'fact-to-mart', label: 'aggregates' },
+            { from: 'FactOpportunity', to: 'MartCustomer360', type: 'fact-to-mart', label: 'aggregates' },
+            { from: 'FactCase', to: 'MartCustomer360', type: 'fact-to-mart', label: 'aggregates' },
+            { from: 'FactActivity', to: 'MartCustomer360', type: 'fact-to-mart', label: 'aggregates' },
+            { from: 'FactCase', to: 'MartService', type: 'fact-to-mart', label: 'aggregates' },
+            { from: 'FactOpportunity', to: 'MartExecutive', type: 'fact-to-mart', label: 'aggregates' },
+            { from: 'FactSales', to: 'MartExecutive', type: 'fact-to-mart', label: 'aggregates' },
+            
+            // Dimension to Mart (direct)
+            { from: 'DimAccount', to: 'MartSales', type: 'fact-to-mart', label: 'segments' },
+            { from: 'DimAccount', to: 'MartCustomer360', type: 'fact-to-mart', label: 'profiles' },
+            { from: 'DimAccount', to: 'MartService', type: 'fact-to-mart', label: 'segments' },
+            { from: 'DimUser', to: 'MartSales', type: 'fact-to-mart', label: 'measures' },
+            { from: 'DimUser', to: 'MartService', type: 'fact-to-mart', label: 'measures' },
+            { from: 'DimProduct', to: 'MartSales', type: 'fact-to-mart', label: 'categorizes' },
+            { from: 'DimDate', to: 'MartSales', type: 'fact-to-mart', label: 'periods' },
+            { from: 'DimDate', to: 'MartMarketing', type: 'fact-to-mart', label: 'periods' },
+            { from: 'DimDate', to: 'MartCustomer360', type: 'fact-to-mart', label: 'periods' },
+            { from: 'DimDate', to: 'MartService', type: 'fact-to-mart', label: 'periods' },
+            { from: 'DimDate', to: 'MartExecutive', type: 'fact-to-mart', label: 'periods' },
+            { from: 'DimCampaign', to: 'MartMarketing', type: 'fact-to-mart', label: 'analyzes' },
+        ];
+        
+        let currentFilter = 'all';
+        let activeConnections = new Set();
+        
+        // Get element position
+        function getPosition(element) {
+            const rect = element.getBoundingClientRect();
+            const canvas = document.getElementById('canvas').getBoundingClientRect();
+            return {
+                x: rect.left - canvas.left + rect.width / 2,
+                y: rect.top - canvas.top + rect.height / 2,
+                width: rect.width,
+                height: rect.height
+            };
+        }
+        
+        // Create curved path avoiding overlaps
+        function createPath(from, to, index, total) {
+            const offset = 30 * (index - total / 2);
+            const midY = (from.y + to.y) / 2;
+            
+            // Control points for smooth curve
+            const cp1x = from.x + offset;
+            const cp1y = from.y + (midY - from.y) * 0.5;
+            const cp2x = to.x + offset;
+            const cp2y = to.y - (to.y - midY) * 0.5;
+            
+            return `M ${from.x} ${from.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${to.x} ${to.y}`;
+        }
+        
+        // Draw all connections
+        function drawConnections() {
+            const svg = document.getElementById('svg-connections');
+            svg.innerHTML = '';
+            
+            // Group connections by type for offset calculation
+            const connectionsByType = {};
+            connections.forEach((conn, idx) => {
+                const key = `${conn.from}-${conn.to}`;
+                if (!connectionsByType[key]) {
+                    connectionsByType[key] = [];
+                }
+                connectionsByType[key].push({ ...conn, originalIndex: idx });
+            });
+            
+            connections.forEach((conn, idx) => {
+                const fromEl = document.getElementById(conn.from);
+                const toEl = document.getElementById(conn.to);
+                
+                if (!fromEl || !toEl) return;
+                
+                const fromPos = getPosition(fromEl);
+                const toPos = getPosition(toEl);
+                
+                const key = `${conn.from}-${conn.to}`;
+                const group = connectionsByType[key];
+                const indexInGroup = group.findIndex(c => c.originalIndex === idx);
+                
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', createPath(fromPos, toPos, indexInGroup, group.length));
+                path.setAttribute('class', `connection ${conn.type}`);
+                path.setAttribute('data-from', conn.from);
+                path.setAttribute('data-to', conn.to);
+                path.setAttribute('data-type', conn.type);
+                path.setAttribute('data-label', conn.label);
+                
+                svg.appendChild(path);
+            });
+            
+            // Apply current filter
+            applyFilter(currentFilter);
+        }
+        
+        // Apply filter
+        function applyFilter(filterType) {
+            const paths = document.querySelectorAll('.connection');
+            paths.forEach(path => {
+                if (filterType === 'all') {
+                    path.style.display = 'block';
+                } else if (filterType === path.getAttribute('data-type')) {
+                    path.style.display = 'block';
+                } else {
+                    path.style.display = 'none';
+                }
+            });
+        }
+        
+        // Show all connections
+        function showAllConnections() {
+            currentFilter = 'all';
+            applyFilter('all');
+            updateActiveButton('Show All');
+        }
+        
+        // Show specific connection type
+        function showConnectionType(type) {
+            currentFilter = type;
+            applyFilter(type);
+            updateActiveButton(type === 'dim-to-fact' ? 'Dim → Fact' : 'Fact → Mart');
+        }
+        
+        // Hide all connections
+        function hideAllConnections() {
+            currentFilter = 'none';
+            const paths = document.querySelectorAll('.connection');
+            paths.forEach(path => {
+                path.style.display = 'none';
+            });
+            updateActiveButton('Hide All');
+        }
+        
+        // Update active button
+        function updateActiveButton(text) {
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === text) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+        
+        // Table hover interactions
+        function setupTableInteractions() {
+            const tables = document.querySelectorAll('.table');
+            const tooltip = document.getElementById('tooltip');
+            
+            tables.forEach(table => {
+                table.addEventListener('mouseenter', function() {
+                    const tableId = this.id;
+                    highlightConnections(tableId);
+                });
+                
+                table.addEventListener('mouseleave', function() {
+                    clearHighlights();
+                });
+                
+                table.addEventListener('click', function() {
+                    const layer = this.getAttribute('data-layer');
+                    const tableName = this.querySelector('.table-header').textContent;
+                    tooltip.textContent = `${layer.toUpperCase()}: ${tableName}`;
+                    tooltip.classList.add('show');
+                    
+                    const rect = this.getBoundingClientRect();
+                    tooltip.style.left = rect.left + 'px';
+                    tooltip.style.top = (rect.top - 40) + 'px';
+                    
+                    setTimeout(() => {
+                        tooltip.classList.remove('show');
+                    }, 2000);
+                });
+            });
+            
+            // FK field hover
+            const fkFields = document.querySelectorAll('.field.fk[data-ref]');
+            fkFields.forEach(field => {
+                field.addEventListener('mouseenter', function() {
+                    const refTable = this.getAttribute('data-ref');
+                    const parentTable = this.closest('.table').id;
+                    highlightSpecificConnection(refTable, parentTable);
+                });
+                
+                field.addEventListener('mouseleave', function() {
+                    clearHighlights();
+                });
+            });
+        }
+        
+        // Highlight connections for a table
+        function highlightConnections(tableId) {
+            const paths = document.querySelectorAll('.connection');
+            paths.forEach(path => {
+                const from = path.getAttribute('data-from');
+                const to = path.getAttribute('data-to');
+                
+                if (from === tableId || to === tableId) {
+                    path.classList.add('active');
+                    
+                    // Highlight connected tables
+                    const connectedId = from === tableId ? to : from;
+                    const connectedTable = document.getElementById(connectedId);
+                    if (connectedTable) {
+                        connectedTable.classList.add('highlighted');
+                    }
+                }
+            });
+        }
+        
+        // Highlight specific connection
+        function highlightSpecificConnection(from, to) {
+            const paths = document.querySelectorAll('.connection');
+            paths.forEach(path => {
+                const pathFrom = path.getAttribute('data-from');
+                const pathTo = path.getAttribute('data-to');
+                
+                if (pathFrom === from && pathTo === to) {
+                    path.classList.add('active');
+                    
+                    const fromTable = document.getElementById(from);
+                    const toTable = document.getElementById(to);
+                    if (fromTable) fromTable.classList.add('highlighted');
+                    if (toTable) toTable.classList.add('highlighted');
+                }
+            });
+        }
+        
+        // Clear all highlights
+        function clearHighlights() {
+            document.querySelectorAll('.connection.active').forEach(path => {
+                path.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.table.highlighted').forEach(table => {
+                table.classList.remove('highlighted');
+            });
+        }
+        
+        // Initialize
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                drawConnections();
+                setupTableInteractions();
+            }, 100);
+        });
+        
+        // Redraw on window resize
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                drawConnections();
+            }, 250);
+        });
+    </script>
+</body>
+</html>
