@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dbt Modular Data Model - Interactive ERD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 100%;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #FF6947;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .dbt-logo {
+            text-align: center;
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+        
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            border: 2px solid;
+        }
+        
+        .source { background: #E8F5E9; border-color: #4CAF50; }
+        .staging { background: #E3F2FD; border-color: #2196F3; }
+        .intermediate { background: #FFF3E0; border-color: #FF9800; }
+        .fact { background: #FCE4EC; border-color: #E91E63; }
+        .mart { background: #F3E5F5; border-color: #9C27B0; }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            padding: 8px 16px;
+            border: 2px solid #FF6947;
+            background: white;
+            color: #FF6947;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover {
+            background: #FF6947;
+            color: white;
+        }
+        
+        .control-btn.active {
+            background: #FF6947;
+            color: white;
+        }
+        
+        .diagram-canvas {
+            position: relative;
+            width: 100%;
+            min-height: 3200px;
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            overflow: visible;
+        }
+        
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .layer {
+            position: relative;
+            z-index: 2;
+            padding: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .layer-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            color: white;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+        }
+        
+        .layer-subtitle {
+            font-size: 11px;
+            font-weight: normal;
+            opacity: 0.9;
+            margin-top: 5px;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        
+        .layer-title.source { background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); }
+        .layer-title.staging { background: linear-gradient(135deg, #2196F3 0%, #1565C0 100%); }
+        .layer-title.intermediate { background: linear-gradient(135deg, #FF9800 0%, #E65100 100%); }
+        .layer-title.fact { background: linear-gradient(135deg, #E91E63 0%, #AD1457 100%); }
+        .layer-title.mart { background: linear-gradient(135deg, #9C27B0 0%, #6A1B9A 100%); }
+        
+        .tables-row {
+            display: flex;
+            gap: 18px;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            align-items: flex-start;
+        }
+        
+        .table {
+            border: 2px solid;
+            border-radius: 6px;
+            background: white;
+            min-width: 260px;
+            max-width: 260px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .table:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .table.highlighted {
+            box-shadow: 0 0 0 3px #FFD700;
+            transform: translateY(-5px);
+        }
+        
+        .table.source { border-color: #4CAF50; }
+        .table.staging { border-color: #2196F3; }
+        .table.intermediate { border-color: #FF9800; }
+        .table.fact { border-color: #E91E63; }
+        .table.mart { border-color: #9C27B0; }
+        
+        .table-header {
+            padding: 10px;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            border-radius: 4px 4px 0 0;
+            font-size: 12px;
+        }
+        
+        .table-header.source { background: #4CAF50; }
+        .table-header.staging { background: #2196F3; }
+        .table-header.intermediate { background: #FF9800; }
+        .table-header.fact { background: #E91E63; }
+        .table-header.mart { background: #9C27B0; }
+        
+        .table-body {
+            padding: 10px;
+        }
+        
+        .field {
+            font-size: 10px;
+            padding: 3px 0;
+            color: #333;
+        }
+        
+        .field.pk {
+            color: #D4AF37;
+            font-weight: bold;
+        }
+        
+        .field.fk {
+            color: #1976D2;
+        }
+        
+        .field.fk:hover {
+            background: #E3F2FD;
+            cursor: pointer;
+        }
+        
+        .divider {
+            border-top: 1px solid #e0e0e0;
+            margin: 6px 0;
+        }
+        
+        .description {
+            font-size: 9px;
+            color: #666;
+            font-style: italic;
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .model-type-badge {
+            display: inline-block;
+            font-size: 8px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-top: 4px;
+            font-weight: bold;
+        }
+        
+        .badge-view { background: #E3F2FD; color: #1976D2; }
+        .badge-incremental { background: #FFF3E0; color: #F57C00; }
+        .badge-table { background: #E8F5E9; color: #388E3C; }
+        
+        .connection {
+            fill: none;
+            stroke: #999;
+            stroke-width: 2;
+            opacity: 0.3;
+            transition: all 0.3s;
+        }
+        
+        .connection.active {
+            stroke: #FF6947;
+            stroke-width: 3;
+            opacity: 1;
+            filter: drop-shadow(0 0 4px #FF6947);
+        }
+        
+        .connection.source-to-staging {
+            stroke: #4CAF50;
+        }
+        
+        .connection.staging-to-intermediate {
+            stroke: #2196F3;
+        }
+        
+        .connection.intermediate-to-fact {
+            stroke: #FF9800;
+        }
+        
+        .connection.fact-to-mart {
+            stroke: #E91E63;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+            white-space: nowrap;
+        }
+        
+        .tooltip.show {
+            opacity: 1;
+        }
+        
+        .layer-info {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 30px;
+            border-left: 4px solid #FF6947;
+        }
+        
+        .layer-info h3 {
+            color: #FF6947;
+            margin-bottom: 10px;
+        }
+        
+        .layer-info ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="dbt-logo">🔶</div>
+        <h1>dbt Modular Data Model</h1>
+        <p class="subtitle">Layered Analytics Engineering: Source → Staging → Intermediate → Facts → Marts</p>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-box source"></div>
+                <span>Source (Raw)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box staging"></div>
+                <span>Staging (stg_)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box intermediate"></div>
+                <span>Intermediate (int_)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box fact"></div>
+                <span>Fact (fct_)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box mart"></div>
+                <span>Mart (mrt_)</span>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="control-btn active" onclick="showAllConnections()">Show All</button>
+            <button class="control-btn" onclick="showConnectionType('source-to-staging')">Source → Staging</button>
+            <button class="control-btn" onclick="showConnectionType('staging-to-intermediate')">Staging → Intermediate</button>
+            <button class="control-btn" onclick="showConnectionType('intermediate-to-fact')">Intermediate → Fact</button>
+            <button class="control-btn" onclick="showConnectionType('fact-to-mart')">Fact → Mart</button>
+            <button class="control-btn" onclick="hideAllConnections()">Hide All</button>
+        </div>
+        
+        <div class="diagram-canvas" id="canvas">
+            <svg id="svg-connections"></svg>
+            
+            <!-- SOURCE LAYER -->
+            <div class="layer">
+                <div class="layer-title source">
+                    1. Source Layer
+                    <div class="layer-subtitle">Raw data from external systems (read-only)</div>
+                </div>
+                <div class="tables-row">
+                    <div class="table source" id="src_salesforce_contact" data-layer="source">
+                        <div class="table-header source">src_salesforce_contact</div>
+                        <div class="table-body">
+                            <div class="field pk">id (PK)</div>
+                            <div class="field">first_name</div>
+                            <div class="field">last_name</div>
+                            <div class="field">email</div>
+                            <div class="field">account_id</div>
+                            <div class="field">created_date</div>
+                            <div class="description">Salesforce contact source</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="src_salesforce_lead" data-layer="source">
+                        <div class="table-header source">src_salesforce_lead</div>
+                        <div class="table-body">
+                            <div class="field pk">id (PK)</div>
+                            <div class="field">company</div>
+                            <div class="field">status</div>
+                            <div class="field">source</div>
+                            <div class="field">owner_id</div>
+                            <div class="field">created_date</div>
+                            <div class="description">Salesforce lead source</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="src_salesforce_account" data-layer="source">
+                        <div class="table-header source">src_salesforce_account</div>
+                        <div class="table-body">
+                            <div class="field pk">id (PK)</div>
+                            <div class="field">name</div>
+                            <div class="field">type</div>
+                            <div class="field">industry</div>
+                            <div class="field">annual_revenue</div>
+                            <div class="field">created_date</div>
+                            <div class="description">Salesforce account source</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="src_salesforce_opportunity" data-layer="source">
+                        <div class="table-header source">src_salesforce_opportunity</div>
+                        <div class="table-body">
+                            <div class="field pk">id (PK)</div>
+                            <div class="field">name</div>
+                            <div class="field">amount</div>
+                            <div class="field">stage_name</div>
+                            <div class="field">close_date</div>
+                            <div class="field">account_id</div>
+                            <div class="description">Salesforce opportunity source</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="src_salesforce_case" data-layer="source">
+                        <div class="table-header source">src_salesforce_case</div>
+                        <div class="table-body">
+                            <div class="field pk">id (PK)</div>
+                            <div class="field">case_number</div>
+                            <div class="field">status</div>
+                            <div class="field">priority</div>
+                            <div class="field">account_id</div>
+                            <div class="field">contact_id</div>
+                            <div class="description">Salesforce case source</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="src_heap_events" data-layer="source">
+                        <div class="table-header source">src_heap_events</div>
+                        <div class="table-body">
+                            <div class="field pk">event_id (PK)</div>
+                            <div class="field">user_id</div>
+                            <div class="field">event_type</div>
+                            <div class="field">timestamp</div>
+                            <div class="field">properties</div>
+                            <div class="description">Heap analytics events</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="src_api_usage_logs" data-layer="source">
+                        <div class="table-header source">src_api_usage_logs</div>
+                        <div class="table-body">
+                            <div class="field pk">log_id (PK)</div>
+                            <div class="field">organization_id</div>
+                            <div class="field">api_endpoint</div>
+                            <div class="field">request_count</div>
+                            <div class="field">timestamp</div>
+                            <div class="description">API usage logs</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="src_db_usage_metrics" data-layer="source">
+                        <div class="table-header source">src_db_usage_metrics</div>
+                        <div class="table-body">
+                            <div class="field pk">metric_id (PK)</div>
+                            <div class="field">organization_id</div>
+                            <div class="field">storage_gb</div>
+                            <div class="field">query_count</div>
+                            <div class="field">timestamp</div>
+                            <div class="description">Database usage metrics</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="src_learnupon_enrollments" data-layer="source">
+                        <div class="table-header source">src_learnupon_enrollments</div>
+                        <div class="table-body">
+                            <div class="field pk">enrollment_id (PK)</div>
+                            <div class="field">user_id</div>
+                            <div class="field">course_id</div>
+                            <div class="field">status</div>
+                            <div class="field">completion_date</div>
+                            <div class="description">LearnUpon enrollments</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table source" id="src_release_versions" data-layer="source">
+                        <div class="table-header source">src_release_versions</div>
+                        <div class="table-body">
+                            <div class="field pk">version_id (PK)</div>
+                            <div class="field">version_number</div>
+                            <div class="field">release_date</div>
+                            <div class="field">release_type</div>
+                            <div class="field">status</div>
+                            <div class="description">Release version data</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- STAGING LAYER -->
+            <div class="layer">
+                <div class="layer-title staging">
+                    2. Staging Layer (stg_)
+                    <div class="layer-subtitle">1:1 with source, light cleaning, renaming, type casting</div>
+                </div>
+                <div class="tables-row">
+                    <div class="table staging" id="stg_salesforce__contacts" data-layer="staging">
+                        <div class="table-header staging">stg_salesforce__contacts</div>
+                        <div class="table-body">
+                            <div class="field pk">contact_id (PK)</div>
+                            <div class="field">contact_name</div>
+                            <div class="field">email</div>
+                            <div class="field">account_id</div>
+                            <div class="field">created_at</div>
+                            <div class="field">_loaded_at</div>
+                            <div class="description">Cleaned contact data</div>
+                            <div class="model-type-badge badge-view">VIEW</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table staging" id="stg_salesforce__leads" data-layer="staging">
+                        <div class="table-header staging">stg_salesforce__leads</div>
+                        <div class="table-body">
+                            <div class="field pk">lead_id (PK)</div>
+                            <div class="field">lead_name</div>
+                            <div class="field">company_name</div>
+                            <div class="field">lead_status</div>
+                            <div class="field">lead_source</div>
+                            <div class="field">created_at</div>
+                            <div class="description">Cleaned lead data</div>
+                            <div class="model-type-badge badge-view">VIEW</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table staging" id="stg_salesforce__accounts" data-layer="staging">
+                        <div class="table-header staging">stg_salesforce__accounts</div>
+                        <div class="table-body">
+                            <div class="field pk">account_id (PK)</div>
+                            <div class="field">account_name</div>
+                            <div class="field">account_type</div>
+                            <div class="field">industry</div>
+                            <div class="field">annual_revenue</div>
+                            <div class="field">created_at</div>
+                            <div class="description">Cleaned account data</div>
+                            <div class="model-type-badge badge-view">VIEW</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table staging" id="stg_salesforce__opportunities" data-layer="staging">
+                        <div class="table-header staging">stg_salesforce__opportunities</div>
+                        <div class="table-body">
+                            <div class="field pk">opportunity_id (PK)</div>
+                            <div class="field">opportunity_name</div>
+                            <div class="field">amount</div>
+                            <div class="field">stage_name</div>
+                            <div class="field">close_date</div>
+                            <div class="field">account_id</div>
+                            <div class="description">Cleaned opportunity data</div>
+                            <div class="model-type-badge badge-view">VIEW</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table staging" id="stg_salesforce__cases" data-layer="staging">
+                        <div class="table-header staging">stg_salesforce__cases</div>
+                        <div class="table-body">
+                            <div class="field pk">case_id (PK)</div>
+                            <div class="field">case_number</div>
+                            <div class="field">case_status</div>
+                            <div class="field">priority</div>
+                            <div class="field">account_id</div>
+                            <div class="field">contact_id</div>
+                            <div class="description">Cleaned case data</div>
+                            <div class="model-type-badge badge-view">VIEW</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table staging" id="stg_heap__events" data-layer="staging">
+                        <div class="table-header staging">stg_heap__events</div>
+                        <div class="table-body">
+                            <div class="field pk">event_id (PK)</div>
+                            <div class="field">user_id</div>
+                            <div class="field">event_type</div>
+                            <div class="field">event_timestamp</div>
+                            <div class="field">event_properties</div>
+                            <div class="description">Cleaned analytics events</div>
+                            <div class="model-type-badge badge-view">VIEW</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table staging" id="stg_platform__api_usage" data-layer="staging">
+                        <div class="table-header staging">stg_platform__api_usage</div>
+                        <div class="table-body">
+                            <div class="field pk">usage_id (PK)</div>
+                            <div class="field">organization_id</div>
+                            <div class="field">endpoint</div>
+                            <div class="field">request_count</div>
+                            <div class="field">usage_date</div>
+                            <div class="description">Cleaned API usage</div>
+                            <div class="model-type-badge badge-view">VIEW</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table staging" id="stg_platform__db_usage" data-layer="staging">
+                        <div class="table-header staging">stg_platform__db_usage</div>
+                        <div class="table-body">
+                            <div class="field pk">usage_id (PK)</div>
+                            <div class="field">organization_id</div>
+                            <div class="field">storage_gb</div>
+                            <div class="field">query_count</div>
+                            <div class="field">usage_date</div>
+                            <div class="description">Cleaned DB usage</div>
+                            <div class="model-type-badge badge-view">VIEW</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table staging" id="stg_learnupon__enrollments" data-layer="staging">
+                        <div class="table-header staging">stg_learnupon__enrollments</div>
+                        <div class="table-body">
+                            <div class="field pk">enrollment_id (PK)</div>
+                            <div class="field">user_id</div>
+                            <div class="field">course_id</div>
+                            <div class="field">enrollment_status</div>
+                            <div class="field">completed_at</div>
+                            <div class="description">Cleaned enrollments</div>
+                            <div class="model-type-badge badge-view">VIEW</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table staging" id="stg_release__versions" data-layer="staging">
+                        <div class="table-header staging">stg_release__versions</div>
+                        <div class="table-body">
+                            <div class="field pk">version_id (PK)</div>
+                            <div class="field">version_number</div>
+                            <div class="field">release_date</div>
+                            <div class="field">release_type</div>
+                            <div class="field">version_status</div>
+                            <div class="description">Cleaned release versions</div>
+                            <div class="model-type-badge badge-view">VIEW</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- INTERMEDIATE LAYER -->
+            <div class="layer">
+                <div class="layer-title intermediate">
+                    3. Intermediate Layer (int_)
+                    <div class="layer-subtitle">Business logic, joins, deduplication, enrichment</div>
+                </div>
+                <div class="tables-row">
+                    <div class="table intermediate" id="int_customers__enriched" data-layer="intermediate">
+                        <div class="table-header intermediate">int_customers__enriched</div>
+                        <div class="table-body">
+                            <div class="field pk">customer_id (PK)</div>
+                            <div class="field">customer_name</div>
+                            <div class="field">customer_type</div>
+                            <div class="field">industry</div>
+                            <div class="field">total_opportunities</div>
+                            <div class="field">total_revenue</div>
+                            <div class="field">first_transaction_date</div>
+                            <div class="description">Enriched customer with aggregates</div>
+                            <div class="model-type-badge badge-view">VIEW</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table intermediate" id="int_opportunities__scored" data-layer="intermediate">
+                        <div class="table-header intermediate">int_opportunities__scored</div>
+                        <div class="table-body">
+                            <div class="field pk">opportunity_id (PK)</div>
+                            <div class="field">account_id</div>
+                            <div class="field">opportunity_score</div>
+                            <div class="field">win_probability</div>
+                            <div class="field">sales_cycle_days</div>
+                            <div class="field">is_high_value</div>
+                            <div class="description">Opportunities with scoring</div>
+                            <div class="model-type-badge badge-view">VIEW</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table intermediate" id="int_cases__enriched" data-layer="intermediate">
+                        <div class="table-header intermediate">int_cases__enriched</div>
+                        <div class="table-body">
+                            <div class="field pk">case_id (PK)</div>
+                            <div class="field">account_id</div>
+                            <div class="field">contact_id</div>
+                            <div class="field">resolution_time_hours</div>
+                            <div class="field">first_response_time</div>
+                            <div class="field">is_escalated</div>
+                            <div class="field">met_sla</div>
+                            <div class="description">Cases with calculated metrics</div>
+                            <div class="model-type-badge badge-view">VIEW</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table intermediate" id="int_user_activity__aggregated" data-layer="intermediate">
+                        <div class="table-header intermediate">int_user_activity__aggregated</div>
+                        <div class="table-body">
+                            <div class="field pk">user_id (PK)</div>
+                            <div class="field pk">activity_date (PK)</div>
+                            <div class="field">total_events</div>
+                            <div class="field">unique_sessions</div>
+                            <div class="field">total_duration_mins</div>
+                            <div class="field">engagement_score</div>
+                            <div class="description">Daily user activity rollup</div>
+                            <div class="model-type-badge badge-table">TABLE</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table intermediate" id="int_usage__daily_summary" data-layer="intermediate">
+                        <div class="table-header intermediate">int_usage__daily_summary</div>
+                        <div class="table-body">
+                            <div class="field pk">organization_id (PK)</div>
+                            <div class="field pk">usage_date (PK)</div>
+                            <div class="field">api_calls</div>
+                            <div class="field">db_storage_gb</div>
+                            <div class="field">active_users</div>
+                            <div class="field">total_cost</div>
+                            <div class="description">Daily organization usage summary</div>
+                            <div class="model-type-badge badge-table">TABLE</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table intermediate" id="int_product_adoption__metrics" data-layer="intermediate">
+                        <div class="table-header intermediate">int_product_adoption__metrics</div>
+                        <div class="table-body">
+                            <div class="field pk">organization_id (PK)</div>
+                            <div class="field pk">metric_date (PK)</div>
+                            <div class="field">features_adopted</div>
+                            <div class="field">adoption_rate</div>
+                            <div class="field">dau</div>
+                            <div class="field">wau</div>
+                            <div class="field">mau</div>
+                            <div class="description">Product adoption metrics</div>
+                            <div class="model-type-badge badge-table">TABLE</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table intermediate" id="int_learning__progress" data-layer="intermediate">
+                        <div class="table-header intermediate">int_learning__progress</div>
+                        <div class="table-body">
+                            <div class="field pk">user_id (PK)</div>
+                            <div class="field">total_enrollments</div>
+                            <div class="field">completed_courses</div>
+                            <div class="field">completion_rate</div>
+                            <div class="field">avg_completion_days</div>
+                            <div class="field">certification_count</div>
+                            <div class="description">Learning progress per user</div>
+                            <div class="model-type-badge badge-view">VIEW</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table intermediate" id="int_releases__impact" data-layer="intermediate">
+                        <div class="table-header intermediate">int_releases__impact</div>
+                        <div class="table-body">
+                            <div class="field pk">version_id (PK)</div>
+                            <div class="field">affected_organizations</div>
+                            <div class="field">deployment_success_rate</div>
+                            <div class="field">rollback_count</div>
+                            <div class="field">avg_deployment_time</div>
+                            <div class="description">Release impact analysis</div>
+                            <div class="model-type-badge badge-view">VIEW</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table intermediate" id="int_organizations__hierarchy" data-layer="intermediate">
+                        <div class="table-header intermediate">int_organizations__hierarchy</div>
+                        <div class="table-body">
+                            <div class="field pk">organization_id (PK)</div>
+                            <div class="field">parent_org_id</div>
+                            <div class="field">org_level</div>
+                            <div class="field">org_path</div>
+                            <div class="field">is_parent</div>
+                            <div class="field">child_count</div>
+                            <div class="description">Organization hierarchy</div>
+                            <div class="model-type-badge badge-view">VIEW</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table intermediate" id="int_user_org__mappings" data-layer="intermediate">
+                        <div class="table-header intermediate">int_user_org__mappings</div>
+                        <div class="table-body">
+                            <div class="field pk">mapping_id (PK)</div>
+                            <div class="field">user_id</div>
+                            <div class="field">organization_id</div>
+                            <div class="field">relationship_type</div>
+                            <div class="field">is_primary</div>
+                            <div class="field">access_level</div>
+                            <div class="description">User-organization relationships</div>
+                            <div class="model-type-badge badge-view">VIEW</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FACT LAYER -->
+            <div class="layer">
+                <div class="layer-title fact">
+                    4. Fact Layer (fct_)
+                    <div class="layer-subtitle">Atomic grain facts, metrics, measurements (incremental)</div>
+                </div>
+                <div class="tables-row">
+                    <div class="table fact" id="fct_opportunities" data-layer="fact">
+                        <div class="table-header fact">fct_opportunities</div>
+                        <div class="table-body">
+                            <div class="field pk">opportunity_key (PK)</div>
+                            <div class="field fk">account_key (FK)</div>
+                            <div class="field fk">owner_key (FK)</div>
+                            <div class="field fk">stage_key (FK)</div>
+                            <div class="field fk">created_date_key (FK)</div>
+                            <div class="field fk">close_date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">amount</div>
+                            <div class="field">win_probability</div>
+                            <div class="field">sales_cycle_days</div>
+                            <div class="field">is_won</div>
+                            <div class="description">Opportunity fact table</div>
+                            <div class="model-type-badge badge-incremental">INCREMENTAL</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table fact" id="fct_cases" data-layer="fact">
+                        <div class="table-header fact">fct_cases</div>
+                        <div class="table-body">
+                            <div class="field pk">case_key (PK)</div>
+                            <div class="field fk">account_key (FK)</div>
+                            <div class="field fk">contact_key (FK)</div>
+                            <div class="field fk">owner_key (FK)</div>
+                            <div class="field fk">created_date_key (FK)</div>
+                            <div class="field fk">closed_date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">resolution_time_hours</div>
+                            <div class="field">is_escalated</div>
+                            <div class="field">met_sla</div>
+                            <div class="description">Support case fact table</div>
+                            <div class="model-type-badge badge-incremental">INCREMENTAL</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table fact" id="fct_user_activity" data-layer="fact">
+                        <div class="table-header fact">fct_user_activity</div>
+                        <div class="table-body">
+                            <div class="field pk">activity_key (PK)</div>
+                            <div class="field fk">user_key (FK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">activity_date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">event_count</div>
+                            <div class="field">session_count</div>
+                            <div class="field">total_duration_mins</div>
+                            <div class="field">engagement_score</div>
+                            <div class="description">User activity fact table</div>
+                            <div class="model-type-badge badge-incremental">INCREMENTAL</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table fact" id="fct_api_usage" data-layer="fact">
+                        <div class="table-header fact">fct_api_usage</div>
+                        <div class="table-body">
+                            <div class="field pk">usage_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">usage_date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">api_calls</div>
+                            <div class="field">bandwidth_mb</div>
+                            <div class="field">error_count</div>
+                            <div class="field">avg_latency_ms</div>
+                            <div class="description">API usage fact table</div>
+                            <div class="model-type-badge badge-incremental">INCREMENTAL</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table fact" id="fct_db_usage" data-layer="fact">
+                        <div class="table-header fact">fct_db_usage</div>
+                        <div class="table-body">
+                            <div class="field pk">usage_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">usage_date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">storage_gb</div>
+                            <div class="field">query_count</div>
+                            <div class="field">compute_hours</div>
+                            <div class="field">cost_usd</div>
+                            <div class="description">Database usage fact table</div>
+                            <div class="model-type-badge badge-incremental">INCREMENTAL</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table fact" id="fct_product_adoption" data-layer="fact">
+                        <div class="table-header fact">fct_product_adoption</div>
+                        <div class="table-body">
+                            <div class="field pk">adoption_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">product_key (FK)</div>
+                            <div class="field fk">adoption_date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">features_adopted</div>
+                            <div class="field">adoption_percentage</div>
+                            <div class="field">active_users</div>
+                            <div class="description">Product adoption fact</div>
+                            <div class="model-type-badge badge-incremental">INCREMENTAL</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table fact" id="fct_learning_completions" data-layer="fact">
+                        <div class="table-header fact">fct_learning_completions</div>
+                        <div class="table-body">
+                            <div class="field pk">completion_key (PK)</div>
+                            <div class="field fk">user_key (FK)</div>
+                            <div class="field fk">course_key (FK)</div>
+                            <div class="field fk">completion_date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">completion_time_days</div>
+                            <div class="field">score</div>
+                            <div class="field">is_certified</div>
+                            <div class="description">Learning completion fact</div>
+                            <div class="model-type-badge badge-incremental">INCREMENTAL</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table fact" id="fct_releases" data-layer="fact">
+                        <div class="table-header fact">fct_releases</div>
+                        <div class="table-body">
+                            <div class="field pk">release_key (PK)</div>
+                            <div class="field fk">version_key (FK)</div>
+                            <div class="field fk">release_date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">deployment_count</div>
+                            <div class="field">success_count</div>
+                            <div class="field">failure_count</div>
+                            <div class="field">avg_deployment_mins</div>
+                            <div class="description">Release deployment fact</div>
+                            <div class="model-type-badge badge-incremental">INCREMENTAL</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- MART LAYER -->
+            <div class="layer">
+                <div class="layer-title mart">
+                    5. Mart Layer (mrt_)
+                    <div class="layer-subtitle">Business-specific aggregates, denormalized for analytics</div>
+                </div>
+                <div class="tables-row">
+                    <div class="table mart" id="mrt_sales__performance" data-layer="mart">
+                        <div class="table-header mart">mrt_sales__performance</div>
+                        <div class="table-body">
+                            <div class="field pk">performance_key (PK)</div>
+                            <div class="field fk">account_key (FK)</div>
+                            <div class="field fk">owner_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">total_pipeline_value</div>
+                            <div class="field">total_closed_won</div>
+                            <div class="field">win_rate</div>
+                            <div class="field">avg_deal_size</div>
+                            <div class="field">quota_attainment</div>
+                            <div class="description">Sales performance mart</div>
+                            <div class="model-type-badge badge-table">TABLE</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table mart" id="mrt_customer__health" data-layer="mart">
+                        <div class="table-header mart">mrt_customer__health</div>
+                        <div class="table-body">
+                            <div class="field pk">health_key (PK)</div>
+                            <div class="field fk">account_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">health_score</div>
+                            <div class="field">usage_score</div>
+                            <div class="field">support_score</div>
+                            <div class="field">engagement_score</div>
+                            <div class="field">churn_risk</div>
+                            <div class="field">nps_score</div>
+                            <div class="description">Customer health mart</div>
+                            <div class="model-type-badge badge-table">TABLE</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table mart" id="mrt_customer__360" data-layer="mart">
+                        <div class="table-header mart">mrt_customer__360</div>
+                        <div class="table-body">
+                            <div class="field pk">customer_360_key (PK)</div>
+                            <div class="field fk">account_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">lifetime_value</div>
+                            <div class="field">total_revenue</div>
+                            <div class="field">total_opportunities</div>
+                            <div class="field">total_cases</div>
+                            <div class="field">avg_resolution_hours</div>
+                            <div class="field">product_adoption_rate</div>
+                            <div class="description">360° customer view</div>
+                            <div class="model-type-badge badge-table">TABLE</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table mart" id="mrt_service__metrics" data-layer="mart">
+                        <div class="table-header mart">mrt_service__metrics</div>
+                        <div class="table-body">
+                            <div class="field pk">service_key (PK)</div>
+                            <div class="field fk">account_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">total_cases</div>
+                            <div class="field">avg_resolution_time</div>
+                            <div class="field">sla_compliance_rate</div>
+                            <div class="field">csat_score</div>
+                            <div class="field">escalation_rate</div>
+                            <div class="description">Service metrics mart</div>
+                            <div class="model-type-badge badge-table">TABLE</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table mart" id="mrt_usage__summary" data-layer="mart">
+                        <div class="table-header mart">mrt_usage__summary</div>
+                        <div class="table-body">
+                            <div class="field pk">usage_summary_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">total_api_calls</div>
+                            <div class="field">total_storage_gb</div>
+                            <div class="field">total_compute_hours</div>
+                            <div class="field">total_cost_usd</div>
+                            <div class="field">active_users</div>
+                            <div class="field">usage_tier</div>
+                            <div class="description">Platform usage summary</div>
+                            <div class="model-type-badge badge-table">TABLE</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table mart" id="mrt_product__adoption" data-layer="mart">
+                        <div class="table-header mart">mrt_product__adoption</div>
+                        <div class="table-body">
+                            <div class="field pk">adoption_summary_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">product_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">features_adopted_count</div>
+                            <div class="field">adoption_percentage</div>
+                            <div class="field">dau</div>
+                            <div class="field">wau</div>
+                            <div class="field">mau</div>
+                            <div class="field">stickiness_ratio</div>
+                            <div class="description">Product adoption analytics</div>
+                            <div class="model-type-badge badge-table">TABLE</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table mart" id="mrt_learning__analytics" data-layer="mart">
+                        <div class="table-header mart">mrt_learning__analytics</div>
+                        <div class="table-body">
+                            <div class="field pk">learning_key (PK)</div>
+                            <div class="field fk">organization_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">total_enrollments</div>
+                            <div class="field">total_completions</div>
+                            <div class="field">completion_rate</div>
+                            <div class="field">avg_completion_days</div>
+                            <div class="field">certification_count</div>
+                            <div class="description">Learning analytics mart</div>
+                            <div class="model-type-badge badge-table">TABLE</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table mart" id="mrt_executive__kpis" data-layer="mart">
+                        <div class="table-header mart">mrt_executive__kpis</div>
+                        <div class="table-body">
+                            <div class="field pk">kpi_key (PK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">total_arr</div>
+                            <div class="field">total_mrr</div>
+                            <div class="field">net_revenue_retention</div>
+                            <div class="field">gross_retention</div>
+                            <div class="field">customer_count</div>
+                            <div class="field">churn_rate</div>
+                            <div class="field">avg_contract_value</div>
+                            <div class="description">Executive KPI dashboard</div>
+                            <div class="model-type-badge badge-table">TABLE</div>
+                        </div>
+                    </div>
+                    
+                    <div class="table mart" id="mrt_release__management" data-layer="mart">
+                        <div class="table-header mart">mrt_release__management</div>
+                        <div class="table-body">
+                            <div class="field pk">release_mgmt_key (PK)</div>
+                            <div class="field fk">version_key (FK)</div>
+                            <div class="field fk">date_key (FK)</div>
+                            <div class="divider"></div>
+                            <div class="field">total_deployments</div>
+                            <div class="field">success_rate</div>
+                            <div class="field">avg_deployment_time</div>
+                            <div class="field">rollback_count</div>
+                            <div class="field">affected_customers</div>
+                            <div class="description">Release management analytics</div>
+                            <div class="model-type-badge badge-table">TABLE</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tooltip" id="tooltip"></div>
+        
+        <!-- dbt Best Practices Info -->
+        <div class="layer-info">
+            <h3>🔶 dbt Modular Architecture Best Practices</h3>
+            <ul>
+                <li><strong>Source Layer:</strong> Raw data from external systems (defined in sources.yml, no models)</li>
+                <li><strong>Staging Layer (stg_):</strong> 1:1 with source tables, light transformations only (renaming, type casting, deduplication). Always use SELECT * approach. Models are typically views.</li>
+                <li><strong>Intermediate Layer (int_):</strong> Business logic, complex joins, enrichment, calculations. Not exposed to end users. Can be views or tables depending on complexity.</li>
+                <li><strong>Fact Layer (fct_):</strong> Atomic grain event/transaction tables with foreign keys to dimensions. Always incremental for performance. One row per business event.</li>
+                <li><strong>Mart Layer (mrt_):</strong> Wide, denormalized tables optimized for BI tools. Pre-joined dimensions and facts. Business-user friendly naming. Can be tables or views.</li>
+            </ul>
+            <h3>📋 Naming Conventions</h3>
+            <ul>
+                <li><strong>stg_[source]__[entity]</strong> - Staging models (e.g., stg_salesforce__contacts)</li>
+                <li><strong>int_[entity]__[verb]</strong> - Intermediate models (e.g., int_customers__enriched)</li>
+                <li><strong>fct_[entity/process]</strong> - Fact tables (e.g., fct_opportunities)</li>
+                <li><strong>mrt_[business_area]__[description]</strong> - Mart models (e.g., mrt_sales__performance)</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Connection definitions following dbt layered architecture
+        const connections = [
+            // Source to Staging (1:1 mappings)
+            { from: 'src_salesforce_contact', to: 'stg_salesforce__contacts', type: 'source-to-staging', label: 'extract' },
+            { from: 'src_salesforce_lead', to: 'stg_salesforce__leads', type: 'source-to-staging', label: 'extract' },
+            { from: 'src_salesforce_account', to: 'stg_salesforce__accounts', type: 'source-to-staging', label: 'extract' },
+            { from: 'src_salesforce_opportunity', to: 'stg_salesforce__opportunities', type: 'source-to-staging', label: 'extract' },
+            { from: 'src_salesforce_case', to: 'stg_salesforce__cases', type: 'source-to-staging', label: 'extract' },
+            { from: 'src_heap_events', to: 'stg_heap__events', type: 'source-to-staging', label: 'extract' },
+            { from: 'src_api_usage_logs', to: 'stg_platform__api_usage', type: 'source-to-staging', label: 'extract' },
+            { from: 'src_db_usage_metrics', to: 'stg_platform__db_usage', type: 'source-to-staging', label: 'extract' },
+            { from: 'src_learnupon_enrollments', to: 'stg_learnupon__enrollments', type: 'source-to-staging', label: 'extract' },
+            { from: 'src_release_versions', to: 'stg_release__versions', type: 'source-to-staging', label: 'extract' },
+            
+            // Staging to Intermediate (business logic)
+            { from: 'stg_salesforce__accounts', to: 'int_customers__enriched', type: 'staging-to-intermediate', label: 'transform' },
+            { from: 'stg_salesforce__opportunities', to: 'int_customers__enriched', type: 'staging-to-intermediate', label: 'join' },
+            
+            { from: 'stg_salesforce__opportunities', to: 'int_opportunities__scored', type: 'staging-to-intermediate', label: 'transform' },
+            
+            { from: 'stg_salesforce__cases', to: 'int_cases__enriched', type: 'staging-to-intermediate', label: 'transform' },
+            
+            { from: 'stg_heap__events', to: 'int_user_activity__aggregated', type: 'staging-to-intermediate', label: 'aggregate' },
+            
+            { from: 'stg_platform__api_usage', to: 'int_usage__daily_summary', type: 'staging-to-intermediate', label: 'aggregate' },
+            { from: 'stg_platform__db_usage', to: 'int_usage__daily_summary', type: 'staging-to-intermediate', label: 'aggregate' },
+            
+            { from: 'stg_heap__events', to: 'int_product_adoption__metrics', type: 'staging-to-intermediate', label: 'calculate' },
+            
+            { from: 'stg_learnupon__enrollments', to: 'int_learning__progress', type: 'staging-to-intermediate', label: 'aggregate' },
+            
+            { from: 'stg_release__versions', to: 'int_releases__impact', type: 'staging-to-intermediate', label: 'calculate' },
+            
+            { from: 'stg_salesforce__accounts', to: 'int_organizations__hierarchy', type: 'staging-to-intermediate', label: 'recursive' },
+            
+            // Intermediate to Fact (atomic grain)
+            { from: 'int_opportunities__scored', to: 'fct_opportunities', type: 'intermediate-to-fact', label: 'atomize' },
+            
+            { from: 'int_cases__enriched', to: 'fct_cases', type: 'intermediate-to-fact', label: 'atomize' },
+            
+            { from: 'int_user_activity__aggregated', to: 'fct_user_activity', type: 'intermediate-to-fact', label: 'load' },
+            
+            { from: 'int_usage__daily_summary', to: 'fct_api_usage', type: 'intermediate-to-fact', label: 'split' },
+            { from: 'int_usage__daily_summary', to: 'fct_db_usage', type: 'intermediate-to-fact', label: 'split' },
+            
+            { from: 'int_product_adoption__metrics', to: 'fct_product_adoption', type: 'intermediate-to-fact', label: 'load' },
+            
+            { from: 'int_learning__progress', to: 'fct_learning_completions', type: 'intermediate-to-fact', label: 'atomize' },
+            
+            { from: 'int_releases__impact', to: 'fct_releases', type: 'intermediate-to-fact', label: 'load' },
+            
+            // Fact to Mart (aggregates for business users)
+            { from: 'fct_opportunities', to: 'mrt_sales__performance', type: 'fact-to-mart', label: 'aggregate' },
+            
+            { from: 'fct_opportunities', to: 'mrt_customer__health', type: 'fact-to-mart', label: 'join' },
+            { from: 'fct_cases', to: 'mrt_customer__health', type: 'fact-to-mart', label: 'join' },
+            { from: 'fct_user_activity', to: 'mrt_customer__health', type: 'fact-to-mart', label: 'join' },
+            
+            { from: 'fct_opportunities', to: 'mrt_customer__360', type: 'fact-to-mart', label: 'join' },
+            { from: 'fct_cases', to: 'mrt_customer__360', type: 'fact-to-mart', label: 'join' },
+            { from: 'fct_product_adoption', to: 'mrt_customer__360', type: 'fact-to-mart', label: 'join' },
+            
+            { from: 'fct_cases', to: 'mrt_service__metrics', type: 'fact-to-mart', label: 'aggregate' },
+            
+            { from: 'fct_api_usage', to: 'mrt_usage__summary', type: 'fact-to-mart', label: 'join' },
+            { from: 'fct_db_usage', to: 'mrt_usage__summary', type: 'fact-to-mart', label: 'join' },
+            
+            { from: 'fct_product_adoption', to: 'mrt_product__adoption', type: 'fact-to-mart', label: 'aggregate' },
+            
+            { from: 'fct_learning_completions', to: 'mrt_learning__analytics', type: 'fact-to-mart', label: 'aggregate' },
+            
+            { from: 'fct_opportunities', to: 'mrt_executive__kpis', type: 'fact-to-mart', label: 'aggregate' },
+            { from: 'fct_db_usage', to: 'mrt_executive__kpis', type: 'fact-to-mart', label: 'aggregate' },
+            
+            { from: 'fct_releases', to: 'mrt_release__management', type: 'fact-to-mart', label: 'aggregate' },
+        ];
+        
+        let currentFilter = 'all';
+        
+        // Get element position
+        function getPosition(element) {
+            const rect = element.getBoundingClientRect();
+            const canvas = document.getElementById('canvas').getBoundingClientRect();
+            return {
+                x: rect.left - canvas.left + rect.width / 2,
+                y: rect.top - canvas.top + rect.height / 2,
+                width: rect.width,
+                height: rect.height
+            };
+        }
+        
+        // Create curved path avoiding overlaps
+        function createPath(from, to, index, total) {
+            const offset = 20 * (index - total / 2);
+            const midY = (from.y + to.y) / 2;
+            
+            // Control points for smooth curve
+            const cp1x = from.x + offset;
+            const cp1y = from.y + (midY - from.y) * 0.5;
+            const cp2x = to.x + offset;
+            const cp2y = to.y - (to.y - midY) * 0.5;
+            
+            return `M ${from.x} ${from.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${to.x} ${to.y}`;
+        }
+        
+        // Draw all connections
+        function drawConnections() {
+            const svg = document.getElementById('svg-connections');
+            svg.innerHTML = '';
+            
+            // Group connections by type for offset calculation
+            const connectionsByType = {};
+            connections.forEach((conn, idx) => {
+                const key = `${conn.from}-${conn.to}`;
+                if (!connectionsByType[key]) {
+                    connectionsByType[key] = [];
+                }
+                connectionsByType[key].push({ ...conn, originalIndex: idx });
+            });
+            
+            connections.forEach((conn, idx) => {
+                const fromEl = document.getElementById(conn.from);
+                const toEl = document.getElementById(conn.to);
+                
+                if (!fromEl || !toEl) return;
+                
+                const fromPos = getPosition(fromEl);
+                const toPos = getPosition(toEl);
+                
+                const key = `${conn.from}-${conn.to}`;
+                const group = connectionsByType[key];
+                const indexInGroup = group.findIndex(c => c.originalIndex === idx);
+                
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', createPath(fromPos, toPos, indexInGroup, group.length));
+                path.setAttribute('class', `connection ${conn.type}`);
+                path.setAttribute('data-from', conn.from);
+                path.setAttribute('data-to', conn.to);
+                path.setAttribute('data-type', conn.type);
+                path.setAttribute('data-label', conn.label);
+                
+                svg.appendChild(path);
+            });
+            
+            // Apply current filter
+            applyFilter(currentFilter);
+        }
+        
+        // Apply filter
+        function applyFilter(filterType) {
+            const paths = document.querySelectorAll('.connection');
+            paths.forEach(path => {
+                if (filterType === 'all') {
+                    path.style.display = 'block';
+                } else if (filterType === path.getAttribute('data-type')) {
+                    path.style.display = 'block';
+                } else {
+                    path.style.display = 'none';
+                }
+            });
+        }
+        
+        // Show all connections
+        function showAllConnections() {
+            currentFilter = 'all';
+            applyFilter('all');
+            updateActiveButton('Show All');
+        }
+        
+        // Show specific connection type
+        function showConnectionType(type) {
+            currentFilter = type;
+            applyFilter(type);
+            const buttonText = {
+                'source-to-staging': 'Source → Staging',
+                'staging-to-intermediate': 'Staging → Intermediate',
+                'intermediate-to-fact': 'Intermediate → Fact',
+                'fact-to-mart': 'Fact → Mart'
+            };
+            updateActiveButton(buttonText[type]);
+        }
+        
+        // Hide all connections
+        function hideAllConnections() {
+            currentFilter = 'none';
+            const paths = document.querySelectorAll('.connection');
+            paths.forEach(path => {
+                path.style.display = 'none';
+            });
+            updateActiveButton('Hide All');
+        }
+        
+        // Update active button
+        function updateActiveButton(text) {
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === text) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+        
+        // Table hover interactions
+        function setupTableInteractions() {
+            const tables = document.querySelectorAll('.table');
+            const tooltip = document.getElementById('tooltip');
+            
+            tables.forEach(table => {
+                table.addEventListener('mouseenter', function() {
+                    const tableId = this.id;
+                    highlightConnections(tableId);
+                });
+                
+                table.addEventListener('mouseleave', function() {
+                    clearHighlights();
+                });
+                
+                table.addEventListener('click', function() {
+                    const layer = this.getAttribute('data-layer');
+                    const tableName = this.querySelector('.table-header').textContent;
+                    tooltip.textContent = `${layer.toUpperCase()}: ${tableName}`;
+                    tooltip.classList.add('show');
+                    
+                    const rect = this.getBoundingClientRect();
+                    tooltip.style.left = rect.left + 'px';
+                    tooltip.style.top = (rect.top - 40) + 'px';
+                    
+                    setTimeout(() => {
+                        tooltip.classList.remove('show');
+                    }, 2000);
+                });
+            });
+        }
+        
+        // Highlight connections for a table
+        function highlightConnections(tableId) {
+            const paths = document.querySelectorAll('.connection');
+            paths.forEach(path => {
+                const from = path.getAttribute('data-from');
+                const to = path.getAttribute('data-to');
+                
+                if (from === tableId || to === tableId) {
+                    path.classList.add('active');
+                    
+                    // Highlight connected tables
+                    const connectedId = from === tableId ? to : from;
+                    const connectedTable = document.getElementById(connectedId);
+                    if (connectedTable) {
+                        connectedTable.classList.add('highlighted');
+                    }
+                }
+            });
+        }
+        
+        // Clear all highlights
+        function clearHighlights() {
+            document.querySelectorAll('.connection.active').forEach(path => {
+                path.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.table.highlighted').forEach(table => {
+                table.classList.remove('highlighted');
+            });
+        }
+        
+        // Initialize
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                drawConnections();
+                setupTableInteractions();
+            }, 100);
+        });
+        
+        // Redraw on window resize
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                drawConnections();
+            }, 250);
+        });
+    </script>
+</body>
+</html>
